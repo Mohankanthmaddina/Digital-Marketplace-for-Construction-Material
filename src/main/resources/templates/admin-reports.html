@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Reports - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .admin-sidebar {
+            min-height: calc(100vh - 80px);
+            background: #1f2937;
+        }
+
+        .admin-menu {
+            color: white;
+            padding: 12px 20px;
+            display: block;
+            transition: background 0.3s;
+        }
+
+        .admin-menu:hover,
+        .admin-menu.active {
+            background: #374151;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-card-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-card-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+    </style>
+
+    <script>
+        // Restrict direct access
+        document.addEventListener("DOMContentLoaded", () => {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            const roleName = user && user.role ? (typeof user.role === 'string' ? user.role : user.role.name) : '';
+            if (!roleName || roleName.toLowerCase() !== 'admin') {
+                showInfo('Access denied. Admin privileges required.', 'Alert');
+                window.location.href = '/login';
+            }
+        });
+
+        // Logout function
+        function logout() {
+            // Clear local storage and the authToken cookie
+            localStorage.clear();
+            document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+</head>
+
+<body class="min-h-screen bg-gray-100">
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer"
+                    onclick="window.location.href='/admin/dashboard'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro Admin</span>
+                </div>
+                <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                    onclick="logout()">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="admin-sidebar w-64">
+            <div class="p-4">
+                <div class="text-white text-lg font-semibold mb-6">Admin Panel</div>
+                <a href="/admin/dashboard" class="admin-menu">
+                    <i class="fas fa-chart-line mr-3"></i> Dashboard
+                </a>
+                <a href="/admin/products" class="admin-menu">
+                    <i class="fas fa-boxes mr-3"></i> Products
+                </a>
+                <a href="/admin/categories" class="admin-menu">
+                    <i class="fas fa-tags mr-3"></i> Categories
+                </a>
+                <a href="/admin/orders" class="admin-menu">
+                    <i class="fas fa-shopping-cart mr-3"></i> Orders
+                </a>
+                <a href="/admin/users" class="admin-menu">
+                    <i class="fas fa-users mr-3"></i> Users
+                </a>
+                <a href="/admin/reports" class="admin-menu active">
+                    <i class="fas fa-chart-bar mr-3"></i> Reports
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">Analytics & Reports</h1>
+                <p class="text-gray-600 mt-2">Comprehensive insights into your construction materials business</p>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Key Metrics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm opacity-90">Total Revenue</p>
+                            <p class="text-2xl font-bold"
+                                th:text="'₹ ' + ${#numbers.formatDecimal(salesSummary.totalRevenue, 1, 2)}">$0.00</p>
+                        </div>
+                        <i class="fas fa-rupee-sign text-3xl opacity-80"></i>
+                    </div>
+                </div>
+
+                <div class="stat-card-2 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm opacity-90">Total Orders</p>
+                            <p class="text-2xl font-bold" th:text="${salesSummary.totalOrders}">0</p>
+                        </div>
+                        <i class="fas fa-shopping-cart text-3xl opacity-80"></i>
+                    </div>
+                </div>
+
+                <div class="stat-card-3 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm opacity-90">Completed Orders</p>
+                            <p class="text-2xl font-bold" th:text="${salesSummary.completedOrders}">0</p>
+                        </div>
+                        <i class="fas fa-check-circle text-3xl opacity-80"></i>
+                    </div>
+                </div>
+
+                <div class="stat-card-4 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm opacity-90">Avg Order Value</p>
+                            <p class="text-2xl font-bold"
+                                th:text="'₹' + ${#numbers.formatDecimal(salesSummary.averageOrderValue, 1, 2)}">₹0.00
+                            </p>
+                        </div>
+                        <i class="fas fa-chart-line text-3xl opacity-80"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Monthly Sales Chart -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Monthly Sales Trend</h3>
+                    <canvas id="monthlySalesChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Category Performance Chart -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Category Performance</h3>
+                    <canvas id="categoryChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Tables Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Most Buying Categories -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-semibold text-gray-800">Most Buying Categories</h3>
+                        <p class="text-sm text-gray-600">Categories with highest sales volume</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div th:each="category, iterStat : ${topCategories}"
+                                class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <span class="text-blue-600 font-semibold text-sm"
+                                            th:text="${iterStat.index + 1}">1</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800" th:text="${category.categoryName}">
+                                            Category</h4>
+                                        <p class="text-sm text-gray-600"
+                                            th:text="${category.totalQuantity} + ' units sold'">0 units sold</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="h-full bg-blue-500 rounded-full"
+                                            th:style="'width: ' + ${category.totalQuantity * 100 / topCategories[0].totalQuantity} + '%'">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trending Items -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-semibold text-gray-800">Trending Items (Last 30 Days)</h3>
+                        <p class="text-sm text-gray-600">Most popular products recently</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div th:each="item, iterStat : ${trendingItems}"
+                                class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <span class="text-green-600 font-semibold text-sm"
+                                            th:text="${iterStat.index + 1}">1</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800" th:text="${item.productName}">Product</h4>
+                                        <p class="text-sm text-gray-600"
+                                            th:text="${item.brand} + ' • ' + ${item.categoryName}">Brand • Category</p>
+                                        <p class="text-sm text-green-600 font-medium"
+                                            th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 2)}">$0.00</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-medium text-gray-800"
+                                        th:text="${item.quantitySold} + ' sold'">0 sold</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Stats -->
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow p-6 text-center">
+                    <i class="fas fa-boxes text-3xl text-blue-600 mb-3"></i>
+                    <h3 class="text-lg font-semibold text-gray-800" th:text="${salesSummary.totalProducts}">0</h3>
+                    <p class="text-gray-600">Total Products</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 text-center">
+                    <i class="fas fa-tags text-3xl text-green-600 mb-3"></i>
+                    <h3 class="text-lg font-semibold text-gray-800" th:text="${salesSummary.totalCategories}">0</h3>
+                    <p class="text-gray-600">Categories</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 text-center">
+                    <i class="fas fa-users text-3xl text-purple-600 mb-3"></i>
+                    <h3 class="text-lg font-semibold text-gray-800" th:text="${salesSummary.totalUsers}">0</h3>
+                    <p class="text-gray-600">Registered Users</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeCharts();
+        });
+
+        function initializeCharts() {
+            // Monthly Sales Chart
+            const monthlySalesCtx = document.getElementById('monthlySalesChart').getContext('2d');
+            const monthlySalesData = /*[[${monthlySales}]]*/[];
+
+            new Chart(monthlySalesCtx, {
+                type: 'line',
+                data: {
+                    labels: monthlySalesData.map(item => item.month),
+                    datasets: [{
+                        label: 'Sales ($)',
+                        data: monthlySalesData.map(item => item.sales),
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Category Performance Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            const categoryData = /*[[${topCategories}]]*/[];
+
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryData.map(item => item.categoryName),
+                    datasets: [{
+                        data: categoryData.map(item => item.totalQuantity),
+                        backgroundColor: [
+                            '#3B82F6',
+                            '#10B981',
+                            '#F59E0B',
+                            '#EF4444',
+                            '#8B5CF6',
+                            '#06B6D4',
+                            '#84CC16',
+                            '#F97316'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

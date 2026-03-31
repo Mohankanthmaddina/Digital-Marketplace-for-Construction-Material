@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - BuildPro</title>
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                margin: 0;
+                padding: 20px;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .invoice-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .invoice-header {
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .company-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 30px;
+        }
+
+        .company-logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .company-details {
+            text-align: right;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .invoice-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .invoice-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .meta-section h3 {
+            font-size: 14px;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .meta-section p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+
+        .items-table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        .items-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .items-table tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .items-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .items-table td {
+            padding: 12px;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .summary {
+            margin-top: 30px;
+            float: right;
+            width: 350px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .summary-row.total {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            border-top: 2px solid #667eea;
+            border-bottom: 2px solid #667eea;
+            margin-top: 10px;
+            padding-top: 15px;
+        }
+
+        .footer {
+            clear: both;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-confirmed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .buttons {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 0 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-print {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #5568d3;
+        }
+
+        .btn-back {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-back:hover {
+            background: #d1d5db;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Company Info -->
+        <div class="company-info">
+            <div>
+                <div class="company-logo">🏗️ BuildPro</div>
+                <p style="color: #666; font-size: 14px;">Premium Construction Materials</p>
+            </div>
+            <div class="company-details">
+                <p><strong>BuildPro Materials Pvt. Ltd.</strong></p>
+                <p>123 Construction Avenue</p>
+                <p>Mumbai, Maharashtra 400001</p>
+                <p>Phone: +91 22 1234 5678</p>
+                <p>Email: info@buildpro.com</p>
+                <p>GST: 27AABCU9603R1ZM</p>
+            </div>
+        </div>
+
+        <!-- Invoice Header -->
+        <div class="invoice-header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="invoice-title">INVOICE</div>
+                <div>
+                    <span class="status-badge" 
+                          th:classappend="${status == T(com.example.buildpro.model.Order.OrderStatus).CONFIRMED} ? 'status-confirmed' : 'status-pending'"
+                          th:text="${status}">CONFIRMED</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Meta Information -->
+        <div class="invoice-meta">
+            <!-- Invoice Details -->
+            <div class="meta-section">
+                <h3>Invoice Details</h3>
+                <p><strong>Invoice Number:</strong> <span th:text="${orderNumber}">INV-001</span></p>
+                <p><strong>Invoice Date:</strong> <span th:text="${#temporals.format(orderDate, 'dd MMM yyyy')}">01 Jan 2024</span></p>
+                <p><strong>Payment Method:</strong> <span th:text="${paymentMethod}">COD</span></p>
+            </div>
+
+            <!-- Billing Address -->
+            <div class="meta-section">
+                <h3>Bill To</h3>
+                <div th:if="${order != null and order.address != null}">
+                    <p><strong th:text="${order.address.name}">Customer Name</strong></p>
+                    <p th:text="${order.address.addressLine1}">Address Line 1</p>
+                    <p th:if="${order.address.addressLine2 != null and !order.address.addressLine2.isEmpty()}" 
+                       th:text="${order.address.addressLine2}">Address Line 2</p>
+                    <p th:text="${order.address.city + ', ' + order.address.state}">City, State</p>
+                    <p th:text="${order.address.postalCode}">Postal Code</p>
+                    <p>Phone: <span th:text="${order.address.phone}">+91 9876543210</span></p>
+                </div>
+                <div th:if="${order != null and order.user != null}">
+                    <p>Email: <span th:text="${order.user.email}">customer@email.com</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Brand</th>
+                    <th class="text-right">Unit Price</th>
+                    <th class="text-right">Quantity</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${order.orderItems}">
+                    <td>
+                        <strong th:text="${item.product.name}">Product Name</strong>
+                    </td>
+                    <td th:text="${item.product.brand}">Brand</td>
+                    <td class="text-right">₹<span th:text="${#numbers.formatDecimal(item.price, 1, 2)}">0.00</span></td>
+                    <td class="text-right" th:text="${item.quantity}">1</td>
+                    <td class="text-right">₹<span th:text="${#numbers.formatDecimal(item.subtotal, 1, 2)}">0.00</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Summary -->
+        <div class="summary">
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>₹<span th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span></span>
+            </div>
+            <div class="summary-row">
+                <span>Delivery Charge</span>
+                <span>₹<span th:text="${#numbers.formatDecimal(deliveryCharge, 1, 2)}">0.00</span></span>
+            </div>
+            <div class="summary-row" th:if="${discount > 0}">
+                <span style="color: #10b981;">Discount</span>
+                <span style="color: #10b981;">-₹<span th:text="${#numbers.formatDecimal(discount, 1, 2)}">0.00</span></span>
+            </div>
+            <div class="summary-row total">
+                <span>Total Amount</span>
+                <span>₹<span th:text="${#numbers.formatDecimal(total, 1, 2)}">0.00</span></span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Terms & Conditions</strong></p>
+            <p style="margin-top: 10px;">1. All products are covered under manufacturer's warranty</p>
+            <p>2. Free delivery within 10km radius</p>
+            <p>3. Payment terms: As per invoice</p>
+            <p style="margin-top: 20px;">Thank you for your business!</p>
+            <p style="margin-top: 20px; font-size: 11px;">
+                This is a computer-generated invoice and does not require a physical signature.
+            </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="buttons no-print">
+            <button onclick="window.print()" class="btn btn-print">
+                🖨️ Print / Download PDF
+            </button>
+            <button onclick="window.history.back()" class="btn btn-back">
+                ← Back
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Auto-print dialog (optional - can be commented out)
+        // window.onload = function() {
+        //     window.print();
+        // };
+    </script>
+</body>
+</html>
+

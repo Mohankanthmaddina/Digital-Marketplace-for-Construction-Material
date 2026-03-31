@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Order Details - Buildpros</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="min-h-screen bg-gray-100">
+    <div class="container mx-auto p-8">
+        <h1 class="text-3xl font-bold mb-8">Test Order Details</h1>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Order Information</h2>
+
+            <div th:if="${order == null}" class="text-red-600">
+                <p>No order data found. This could mean:</p>
+                <ul class="list-disc ml-6 mt-2">
+                    <li>The order ID doesn't exist</li>
+                    <li>There was an error loading the order</li>
+                    <li>The order service is not working</li>
+                </ul>
+            </div>
+
+            <div th:if="${order != null}">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Order ID</label>
+                        <p class="mt-1 text-gray-900" th:text="${order.id}"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Customer Name</label>
+                        <p class="mt-1 text-gray-900" th:text="${order.userName}"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Customer Email</label>
+                        <p class="mt-1 text-gray-900" th:text="${order.userEmail}"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Order Status</label>
+                        <p class="mt-1 text-gray-900" th:text="${order.status}"></p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700">Order Items</label>
+                    <div th:if="${order.orderItems == null or order.orderItems.isEmpty()}" class="mt-2 text-gray-500">
+                        No items found in this order
+                    </div>
+                    <div th:if="${order.orderItems != null and !order.orderItems.isEmpty()}" class="mt-2">
+                        <p th:text="'Number of items: ' + ${#lists.size(order.orderItems)}"></p>
+                        <div th:each="item : ${order.orderItems}" class="border p-2 mt-2 rounded">
+                            <p th:text="'Product: ' + ${item.productName}"></p>
+                            <p th:text="'Quantity: ' + ${item.quantity}"></p>
+                            <p th:text="'Price: ₹' + ${item.price}"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700">Order Summary</label>
+                    <div class="mt-2 space-y-2">
+                        <p th:text="'Total Amount: ₹' + ${order.totalAmount}"></p>
+                        <p th:text="'Final Amount: ₹' + ${order.finalAmount}"></p>
+                        <p th:text="'Order Date: ' + ${order.orderDateDisplay}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <a href="/admin/orders" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                Back to Orders
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>

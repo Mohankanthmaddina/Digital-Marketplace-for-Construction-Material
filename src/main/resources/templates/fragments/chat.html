@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+    <div th:fragment="chatWidget">
+        <style>
+            /* Chat Widget Styles */
+            .chat-widget-container {
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                z-index: 9999;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            .chat-toggle-btn {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                border: none;
+                color: white;
+                font-size: 24px;
+            }
+
+            .chat-toggle-btn:hover {
+                transform: scale(1.1);
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.7);
+            }
+
+            .chat-window {
+                position: absolute;
+                bottom: 80px;
+                right: 0;
+                width: 380px;
+                height: 550px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 20px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                transform-origin: bottom right;
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                opacity: 0;
+                transform: scale(0.8);
+                pointer-events: none;
+            }
+
+            .chat-window.active {
+                opacity: 1;
+                transform: scale(1);
+                pointer-events: all;
+            }
+
+            .chat-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                color: white;
+            }
+
+            .chat-header h3 {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .chat-messages {
+                flex: 1;
+                padding: 16px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                background: #f9fafb;
+            }
+
+            .message {
+                max-width: 80%;
+                padding: 10px 14px;
+                border-radius: 12px;
+                font-size: 14px;
+                line-height: 1.5;
+                word-wrap: break-word;
+            }
+
+            .message.user {
+                align-self: flex-end;
+                background: #667eea;
+                color: white;
+                border-bottom-right-radius: 2px;
+            }
+
+            .message.sys {
+                align-self: flex-start;
+                background: white;
+                color: #333;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+                border-bottom-left-radius: 2px;
+            }
+
+            .chat-input-area {
+                padding: 16px;
+                background: white;
+                border-top: 1px solid rgba(0, 0, 0, 0.05);
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .chat-input {
+                flex: 1;
+                border: 1px solid #e5e7eb;
+                border-radius: 20px;
+                padding: 10px 16px;
+                outline: none;
+                transition: border-color 0.2s;
+                font-size: 14px;
+            }
+
+            .chat-input:focus {
+                border-color: #667eea;
+            }
+
+            .action-btn {
+                background: #f3f4f6;
+                color: #667eea;
+                border: none;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .action-btn:hover {
+                background: #e5e7eb;
+            }
+
+            .action-btn.listening {
+                background: #ff4757;
+                color: white;
+                animation: pulse 1.5s infinite;
+            }
+
+            .send-btn {
+                background: #667eea;
+                color: white;
+                border: none;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .send-btn:hover {
+                background: #5a67d8;
+            }
+
+            @keyframes pulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4);
+                }
+
+                70% {
+                    box-shadow: 0 0 0 10px rgba(255, 71, 87, 0);
+                }
+
+                100% {
+                    box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+                }
+            }
+
+            .typing-indicator {
+                font-size: 12px;
+                color: #888;
+                margin-left: 10px;
+                margin-bottom: 5px;
+                display: none;
+            }
+        </style>
+
+        <div class="chat-widget-container">
+            <!-- Chat Toggle Button -->
+            <button class="chat-toggle-btn" onclick="toggleChat()">
+                <i class="fas fa-robot"></i>
+            </button>
+
+            <!-- Chat Window -->
+            <div class="chat-window" id="chatWindow">
+                <div class="chat-header">
+                    <h3><i class="fas fa-sparkles"></i> AI Assistant</h3>
+                    <button onclick="toggleChat()" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message sys">
+                        Hello! 👋 I'm your BuildPro assistant. Ask me anything about construction materials, orders, or
+                        navigation!
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">
+                    BuildPro AI is thinking...
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Type or speak..."
+                        onkeypress="handleKeyPress(event)">
+
+                    <!-- Microphone Button -->
+                    <button id="micBtn" class="action-btn" onclick="toggleVoiceInput()" title="Speak">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+
+                    <button class="send-btn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Speech Recognition Setup
+            let recognition;
+            let isListening = false;
+            let voiceEnabled = false; // Flag to check if current interaction was voice-initiated
+            let isSpeaking = false;   // Flag to check if AI is currently speaking (TTS)
+
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US'; // Default to English, can detect others
+
+                recognition.onstart = function () {
+                    isListening = true;
+                    document.getElementById('micBtn').classList.add('listening');
+                    document.getElementById('chatInput').placeholder = "Listening...";
+                };
+
+                recognition.onend = function () {
+                    isListening = false;
+                    document.getElementById('micBtn').classList.remove('listening');
+                    document.getElementById('chatInput').placeholder = "Type a message...";
+
+                    // Continuous Listening: Auto-restart if Assistant Mode is active and not currently speaking
+                    const assistantMode = localStorage.getItem('assistantMode');
+                    if (assistantMode === 'true' && !isSpeaking) {
+                        setTimeout(() => {
+                            if (!isListening) startListening();
+                        }, 200); // Short delay to prevent rapid-fire loops
+                    }
+                };
+
+                recognition.onresult = function (event) {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('chatInput').value = transcript;
+                    voiceEnabled = true; // Mark as voice interaction
+                    sendMessage(); // Auto-send
+                };
+
+                recognition.onerror = function (event) {
+                    console.error('Speech recognition error:', event.error);
+                    stopListening();
+                };
+            } else {
+                console.warn('Web Speech API not supported in this browser.');
+                document.getElementById('micBtn').style.display = 'none';
+            }
+
+            function toggleVoiceInput() {
+                if (!recognition) {
+                    alert('Voice input is not supported in this browser.');
+                    return;
+                }
+                if (isListening) {
+                    stopListening();
+                } else {
+                    startListening();
+                }
+            }
+
+            function startListening() {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    // Ignore errors if already started
+                    if (e.name !== 'InvalidStateError') {
+                        console.error(e);
+                    }
+                }
+            }
+
+            function stopListening() {
+                try {
+                    recognition.stop();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            function speakText(text) {
+                if ('speechSynthesis' in window) {
+                    // Cancel any ongoing speech
+                    window.speechSynthesis.cancel();
+
+                    isSpeaking = true;
+                    if (isListening) stopListening(); // Stop listening while AI speaks
+
+                    const utterance = new SpeechSynthesisUtterance(text);
+
+                    utterance.onend = function () {
+                        isSpeaking = false;
+                        // Resume listening after speaking if in Assistant Mode
+                        const assistantMode = localStorage.getItem('assistantMode');
+                        if (assistantMode === 'true') {
+                            setTimeout(() => startListening(), 100);
+                        }
+                    };
+
+                    utterance.onerror = function () {
+                        isSpeaking = false; // Reset on error too
+                    };
+
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
+
+            function toggleChat() {
+                const chatWindow = document.getElementById('chatWindow');
+                chatWindow.classList.toggle('active');
+
+                if (chatWindow.classList.contains('active')) {
+                    document.getElementById('chatInput').focus();
+                }
+            }
+
+            function handleKeyPress(event) {
+                if (event.key === 'Enter') {
+                    voiceEnabled = false; // Reset voice flag on manual type
+                    sendMessage();
+                }
+            }
+
+            function appendMessage(text, type) {
+                const messagesDiv = document.getElementById('chatMessages');
+                const messageEl = document.createElement('div');
+                messageEl.className = `message ${type}`;
+                messageEl.textContent = text;
+                messagesDiv.appendChild(messageEl);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+
+            async function sendMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+
+                if (!message) return;
+
+                // Add user message
+                appendMessage(message, 'user');
+                input.value = '';
+
+                // Show typing indicator
+                const typingIndicator = document.getElementById('typingIndicator');
+                typingIndicator.style.display = 'block';
+
+                try {
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message: message })
+                    });
+
+                    const data = await response.json();
+
+                    // Hide typing indicator
+                    typingIndicator.style.display = 'none';
+
+                    // Parse text for navigation commands
+                    let botText = data.response;
+                    const navMatch = botText.match(/\[\[NAVIGATE: (.*?)\]\]/);
+
+                    if (navMatch) {
+                        let url = navMatch[1].trim();
+                        botText = botText.replace(navMatch[0], '').trim();
+
+                        // Dynamic URL handling for Cart, Checkout, Orders, Profile queries (requires userId)
+                        // Checks for keywords and appends userId if logged in
+                        const secureRoutes = ['/cart', '/checkout', '/orders', '/profile'];
+                        const requiresAuth = secureRoutes.some(route => url.toLowerCase().includes(route));
+
+                        if (requiresAuth) {
+                            const userId = localStorage.getItem('currentUserId');
+                            if (userId) {
+                                // Append userId if not already present
+                                if (!url.includes('userId=')) {
+                                    url += (url.includes('?') ? '&' : '?') + `userId=${userId}`;
+                                }
+                            } else {
+                                // If trying to access secure pages without login, redirect to login
+                                url = '/login';
+                                botText = "You need to log in to access this page.";
+                            }
+                        }
+
+                        if (botText) {
+                            appendMessage(botText, 'sys');
+                            if (voiceEnabled) speakText(botText);
+                        }
+
+                        setTimeout(() => {
+                            window.location.href = url;
+                        }, 1000);
+                    } else {
+                        appendMessage(botText, 'sys');
+                        if (voiceEnabled) speakText(botText);
+                    }
+
+                } catch (error) {
+                    typingIndicator.style.display = 'none';
+                    appendMessage("Sorry, I'm having trouble connecting to the server.", 'sys');
+                    console.error('Chat error:', error);
+                }
+            }
+
+            // Personal Assistant Mode Logic
+            document.addEventListener('DOMContentLoaded', function () {
+                const assistantMode = localStorage.getItem('assistantMode');
+                if (assistantMode === 'true') {
+                    const chatWindow = document.getElementById('chatWindow');
+
+                    // Auto-open chat
+                    if (chatWindow && !chatWindow.classList.contains('active')) {
+                        toggleChat();
+                    }
+
+                    // Add visual indicator for Assistant Mode
+                    const header = document.querySelector('.chat-header h3');
+                    if (header && !header.innerHTML.includes('(Active)')) {
+                        header.innerHTML += ' <span style="font-size: 12px; opacity: 0.8;">(Active)</span>';
+                    }
+
+                    // Add Deactivation Button
+                    const closeBtn = document.querySelector('.chat-header button');
+                    if (closeBtn && !document.getElementById('deactivateBtn')) {
+                        const deactivateBtn = document.createElement('button');
+                        deactivateBtn.id = 'deactivateBtn';
+                        deactivateBtn.innerHTML = '<i class="fas fa-power-off"></i>';
+                        deactivateBtn.className = 'text-white hover:text-red-200 transition-colors mr-3';
+                        deactivateBtn.title = "Turn off Assistant Mode";
+                        deactivateBtn.onclick = function (e) {
+                            e.stopPropagation();
+                            disableAssistantMode();
+                        };
+                        closeBtn.parentNode.insertBefore(deactivateBtn, closeBtn);
+                    }
+
+                    // Greet if just activated or navigated
+                    if (!sessionStorage.getItem('assistantGreeted')) {
+                        setTimeout(() => {
+                            appendMessage("Personal Assistant Active. I'm listening...", 'sys');
+                            speakText("I am ready."); // This handles auto-start listening via speakText
+                            sessionStorage.setItem('assistantGreeted', 'true');
+                        }, 500);
+                    } else {
+                        // On navigation, if already greeted, ensure we start listening if browser allows
+                        setTimeout(() => {
+                            if (!isListening && !isSpeaking) startListening();
+                        }, 800);
+                    }
+                }
+            });
+
+            function enableAssistantMode() {
+                localStorage.setItem('assistantMode', 'true');
+                sessionStorage.removeItem('assistantGreeted'); // Reset greeting for fresh start
+                toggleChat();
+                // Start listening immediately
+                setTimeout(() => {
+                    voiceEnabled = true; // Assume enabling mode is voice intent
+                    startListening();
+                }, 500);
+            }
+
+            function disableAssistantMode() {
+                localStorage.setItem('assistantMode', 'false');
+                location.reload(); // Reload to clear state/UI
+            }
+        </script>
+    </div>
+</body>
+
+</html>

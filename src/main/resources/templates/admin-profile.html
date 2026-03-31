@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Profile - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="min-h-screen bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer"
+                    onclick="window.location.href='/admin/dashboard'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro Admin</span>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                            onclick="toggleProfileMenu()">
+                            <i class="fas fa-user-shield text-2xl"></i>
+                            <span class="hidden md:block" th:if="${admin != null}" th:text="${admin.name}">Admin</span>
+                            <span class="hidden md:block" th:if="${admin == null}">Admin</span>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </button>
+                        <div id="profile-menu"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <a href="#" onclick="openAdminProfile()" class="block px-4 py-2 text-blue-600 bg-blue-50">
+                                <i class="fas fa-user mr-2"></i> My Profile
+                            </a>
+                            <a href="#" onclick="openEditAdminProfile()"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-edit mr-2"></i> Edit Profile
+                            </a>
+                            <a href="/admin/dashboard" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-dashboard mr-2"></i> Dashboard
+                            </a>
+                            <hr class="my-2">
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-red-600 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto my-12 px-4">
+        <!-- Success Message -->
+        <div th:if="${param.success}"
+            class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span th:text="${param.success}"></span>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${param.error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span th:text="${param.error}"></span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Profile Information -->
+            <div class="lg:col-span-1" th:if="${admin != null}">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-center mb-6">
+                        <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-user-shield text-blue-600 text-3xl"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold" th:text="${admin.name}">Admin Name</h2>
+                        <p class="text-gray-600" th:text="${admin.email}">admin@example.com</p>
+                        <span
+                            class="inline-block mt-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
+                            ADMINISTRATOR
+                        </span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-envelope text-gray-400 mr-3"></i>
+                            <span th:text="${admin.email}">admin@example.com</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar text-gray-400 mr-3"></i>
+                            <span>Member since: </span>
+                            <span
+                                th:text="${admin.createdAt != null ? #temporals.format(admin.createdAt, 'dd/MM/yyyy') : 'N/A'}"
+                                class="ml-1">01/01/2024</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt text-gray-400 mr-3"></i>
+                            <span th:class="${admin.isVerified ? 'text-green-600' : 'text-red-600'}"
+                                th:text="${admin.isVerified ? 'Verified Admin' : 'Pending Verification'}">Verified
+                                Admin</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-gray-400 mr-3"></i>
+                            <span>Last updated: </span>
+                            <span
+                                th:text="${admin.updatedAt != null ? #temporals.format(admin.updatedAt, 'dd/MM/yyyy') : 'N/A'}"
+                                class="ml-1">01/01/2024</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 space-y-3">
+                        <a href="#" onclick="openEditAdminProfile()"
+                            class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center block">
+                            <i class="fas fa-edit mr-2"></i> Edit Profile
+                        </a>
+                        <a href="/admin/dashboard"
+                            class="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors text-center block">
+                            <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1" th:if="${admin == null}">
+                <div class="bg-white rounded-lg shadow p-6 text-center">
+                    <i class="fas fa-user-shield text-3xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-600">Admin details not available.</p>
+                    <p class="text-sm text-gray-500 mt-2">Please access this page from the admin dashboard.</p>
+                    <a href="/admin/dashboard"
+                        class="mt-4 inline-block bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Admin Information & Stats -->
+            <div class="lg:col-span-2">
+                <!-- Admin Privileges -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-key text-blue-600 mr-2"></i>
+                        Admin Privileges
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                            <span class="text-sm">Manage Products</span>
+                        </div>
+                        <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                            <span class="text-sm">Manage Categories</span>
+                        </div>
+                        <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                            <span class="text-sm">Manage Orders</span>
+                        </div>
+                        <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                            <span class="text-sm">View Reports</span>
+                        </div>
+                        <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                            <span class="text-sm">Manage Users</span>
+                        </div>
+                        <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                            <span class="text-sm">Full System Access</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Information -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                        Account Information
+                    </h3>
+                    <div class="space-y-4" th:if="${admin != null}">
+                        <div class="flex justify-between items-center py-3 border-b">
+                            <span class="text-gray-600">Full Name</span>
+                            <span class="font-medium" th:text="${admin.name}">Admin Name</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3 border-b">
+                            <span class="text-gray-600">Email Address</span>
+                            <span class="font-medium" th:text="${admin.email}">admin@example.com</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3 border-b">
+                            <span class="text-gray-600">Account Type</span>
+                            <span class="font-medium text-purple-600">ADMIN</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3 border-b">
+                            <span class="text-gray-600">Verification Status</span>
+                            <span
+                                th:class="${admin.isVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"
+                                class="px-3 py-1 rounded-full text-xs font-semibold"
+                                th:text="${admin.isVerified ? 'VERIFIED' : 'PENDING'}">VERIFIED</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3">
+                            <span class="text-gray-600">Account Created</span>
+                            <span class="font-medium"
+                                th:text="${admin.createdAt != null ? #temporals.format(admin.createdAt, 'dd MMM yyyy, HH:mm') : 'N/A'}">01
+                                Jan 2024, 12:00</span>
+                        </div>
+                    </div>
+                    <div th:if="${admin == null}" class="text-center py-8 text-gray-500">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <p>Unable to load admin information</p>
+                    </div>
+                </div>
+
+                <!-- Security Notice -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mt-6">
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3 mt-1"></i>
+                        <div>
+                            <h4 class="font-semibold text-yellow-800 mb-2">Security Notice</h4>
+                            <p class="text-sm text-yellow-700">
+                                As an administrator, you have full access to the system. Please ensure your account
+                                credentials are kept secure and never share your login information with anyone.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Auto-resolve admin profile if opened without context
+        const isAdminPresent = [[${ admin != null}]];
+        if (!isAdminPresent) {
+            const id = localStorage.getItem('currentUserId');
+            if (id) {
+                window.location.replace('/admin/profile?adminId=' + id);
+            }
+        }
+
+        function currentAdminId() {
+            return localStorage.getItem('currentUserId');
+        }
+
+        function openAdminProfile() {
+            const id = currentAdminId();
+            if (!id) {
+                showInfo('Admin not identified. Please access from dashboard.', 'Alert');
+                return;
+            }
+            window.location.href = '/admin/profile?adminId=' + id;
+        }
+
+        function openEditAdminProfile() {
+            const id = currentAdminId();
+            if (!id) {
+                showInfo('Admin not identified. Please access from dashboard.', 'Alert');
+                return;
+            }
+            window.location.href = '/admin/profile/edit?adminId=' + id;
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function logout() {
+            // Clear local storage
+            localStorage.removeItem('currentUserId');
+            localStorage.removeItem('cartItems');
+            localStorage.removeItem('authToken');
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('profile-menu');
+            const button = event.target.closest('button');
+            if (!button || !button.onclick || button.onclick.toString().indexOf('toggleProfileMenu') === -1) {
+                menu.classList.add('hidden');
+            }
+        });
+    </script>
+
+</body>
+
+</html>

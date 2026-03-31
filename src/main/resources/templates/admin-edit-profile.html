@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Admin Profile - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="min-h-screen bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer"
+                    onclick="window.location.href='/admin/dashboard'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro Admin</span>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                            onclick="toggleProfileMenu()">
+                            <i class="fas fa-user-shield text-2xl"></i>
+                            <span class="hidden md:block" th:if="${admin != null}" th:text="${admin.name}">Admin</span>
+                            <span class="hidden md:block" th:if="${admin == null}">Admin</span>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </button>
+                        <div id="profile-menu"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <a href="#" onclick="openAdminProfile()"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i> My Profile
+                            </a>
+                            <a href="#" onclick="openEditAdminProfile()"
+                                class="block px-4 py-2 text-blue-600 bg-blue-50">
+                                <i class="fas fa-edit mr-2"></i> Edit Profile
+                            </a>
+                            <a href="/admin/dashboard" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-dashboard mr-2"></i> Dashboard
+                            </a>
+                            <hr class="my-2">
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-red-600 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto my-12 px-4">
+        <div class="bg-white rounded-lg shadow p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-user-edit text-blue-600 mr-2"></i>
+                    Edit Admin Profile
+                </h1>
+                <a href="#" onclick="openAdminProfile()"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Profile
+                </a>
+            </div>
+
+            <!-- Success Message -->
+            <div th:if="${param.success}"
+                class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span th:text="${param.success}"></span>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${param.error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <span th:text="${param.error}"></span>
+            </div>
+
+            <!-- Edit Profile Form -->
+            <form th:action="@{/admin/profile/update}" th:object="${admin}" method="POST" class="space-y-6">
+                <input type="hidden" name="adminId" th:if="${admin != null}" th:value="${admin.id}">
+
+                <!-- Admin Badge -->
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-shield-alt text-purple-600 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="font-semibold text-purple-800">Administrator Account</h3>
+                            <p class="text-sm text-purple-700">You have full system access and privileges</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user mr-1"></i> Full Name *
+                        </label>
+                        <input type="text" th:field="*{name}" required
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <!-- Email (Read-only) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-envelope mr-1"></i> Email Address
+                        </label>
+                        <input type="email" th:if="${admin != null}" th:value="${admin.email}" disabled
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-500">
+                        <input type="email" th:if="${admin == null}" value="" disabled
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-500">
+                        <p class="text-sm text-gray-500 mt-1">
+                            <i class="fas fa-lock mr-1"></i> Email cannot be changed
+                        </p>
+                    </div>
+
+                    <!-- Role (Read-only) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user-tag mr-1"></i> Account Type
+                        </label>
+                        <input type="text" value="ADMIN" disabled
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-purple-50 text-purple-700 font-semibold">
+                    </div>
+
+                    <!-- Member Since (Read-only) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar mr-1"></i> Member Since
+                        </label>
+                        <input type="text"
+                            th:value="${admin != null ? (#temporals.format(admin.createdAt, 'dd MMM yyyy')) : 'N/A'}"
+                            disabled
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-500">
+                    </div>
+                </div>
+
+                <!-- Verification Status -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-shield-alt text-blue-600 mr-2"></i>
+                        Account Status
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-white rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-3 text-xl"></i>
+                                <div>
+                                    <p class="font-medium">Email Verification</p>
+                                    <p class="text-sm text-gray-600">Your email verification status</p>
+                                </div>
+                            </div>
+                            <span th:if="${admin != null}"
+                                th:class="${admin.isVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"
+                                class="px-3 py-1 rounded-full text-sm font-semibold"
+                                th:text="${admin.isVerified ? 'VERIFIED' : 'PENDING'}">VERIFIED</span>
+                            <span th:if="${admin == null}"
+                                class="px-3 py-1 rounded-full text-sm font-semibold bg-gray-100 text-gray-700">Unknown</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-white rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-key text-purple-500 mr-3 text-xl"></i>
+                                <div>
+                                    <p class="font-medium">Admin Privileges</p>
+                                    <p class="text-sm text-gray-600">Full system access granted</p>
+                                </div>
+                            </div>
+                            <span
+                                class="px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800">ACTIVE</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-white rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-clock text-blue-500 mr-3 text-xl"></i>
+                                <div>
+                                    <p class="font-medium">Last Updated</p>
+                                    <p class="text-sm text-gray-600">Profile last modified</p>
+                                </div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-600"
+                                th:text="${admin != null && admin.updatedAt != null ? #temporals.format(admin.updatedAt, 'dd MMM yyyy') : 'N/A'}">N/A</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Notice -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-yellow-600 text-xl mr-3 mt-1"></i>
+                        <div>
+                            <h4 class="font-semibold text-yellow-800 mb-1">Important Information</h4>
+                            <ul class="text-sm text-yellow-700 space-y-1">
+                                <li>• Email address cannot be changed for security reasons</li>
+                                <li>• Admin role and privileges are managed by system administrators</li>
+                                <li>• All profile changes are logged for security audit purposes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex justify-end space-x-4 pt-4 border-t">
+                    <a href="#" onclick="openAdminProfile()"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg transition-colors font-medium">
+                        <i class="fas fa-times mr-2"></i> Cancel
+                    </a>
+                    <button type="submit"
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <i class="fas fa-save mr-2"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+
+            <div th:if="${admin == null}"
+                class="mt-6 p-6 bg-red-50 border border-red-200 text-red-800 rounded-lg text-center">
+                <i class="fas fa-exclamation-triangle text-3xl mb-3"></i>
+                <p class="font-semibold">Cannot load admin details</p>
+                <p class="text-sm mt-2">Please access this page from the admin dashboard.</p>
+                <a href="/admin/dashboard"
+                    class="mt-4 inline-block bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
+                    Go to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Auto-redirect with adminId if missing context
+        const hasAdmin = [[${ admin != null}]];
+        if (!hasAdmin) {
+            const id = localStorage.getItem('currentUserId');
+            if (id) {
+                const u = new URL(window.location.href);
+                if (!u.searchParams.get('adminId')) {
+                    window.location.replace('/admin/profile/edit?adminId=' + id);
+                }
+            }
+        }
+
+        function currentAdminId() {
+            return localStorage.getItem('currentUserId');
+        }
+
+        function openAdminProfile() {
+            const id = currentAdminId();
+            if (!id) {
+                showInfo('Admin not identified. Please access from dashboard.', 'Alert');
+                return;
+            }
+            window.location.href = '/admin/profile?adminId=' + id;
+        }
+
+        function openEditAdminProfile() {
+            const id = currentAdminId();
+            if (!id) {
+                showInfo('Admin not identified. Please access from dashboard.', 'Alert');
+                return;
+            }
+            window.location.href = '/admin/profile/edit?adminId=' + id;
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function logout() {
+            // Clear local storage
+            localStorage.removeItem('currentUserId');
+            localStorage.removeItem('cartItems');
+            localStorage.removeItem('authToken');
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('profile-menu');
+            const button = event.target.closest('button');
+            if (!button || !button.onclick || button.onclick.toString().indexOf('toggleProfileMenu') === -1) {
+                menu.classList.add('hidden');
+            }
+        });
+    </script>
+
+</body>
+
+</html>

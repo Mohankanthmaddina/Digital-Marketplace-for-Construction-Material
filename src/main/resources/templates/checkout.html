@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+    <script src="/js/location-service.js"></script>
+    <style>
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Custom Modal Styles */
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .custom-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 0;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 24px;
+            text-align: center;
+            color: white;
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .modal-body {
+            padding: 32px 24px;
+        }
+
+        .modal-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-info-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .modal-info-value {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .modal-message {
+            text-align: center;
+            font-size: 16px;
+            color: #4b5563;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 24px;
+            background: #f9fafb;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn-cancel {
+            background: white;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .modal-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+        }
+
+        .modal-btn-ok {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .modal-btn-ok:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600"> Build Pro
+
+                    </span>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="relative cursor-pointer" onclick="goToCart()">
+                        <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+                        <span class="cart-badge" id="cart-count">0</span>
+                    </div>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        onclick="logout()">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto my-12 px-4">
+        <!-- Hidden userId for JavaScript -->
+        <input type="hidden" id="current-user-id" th:value="${userId}">
+
+        <!-- Success Message -->
+        <div th:if="${param.success}"
+            class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span th:text="${param.success}"></span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Address Selection -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h2 class="text-2xl font-semibold mb-6">Delivery Address</h2>
+
+                    <!-- Existing Addresses -->
+                    <div th:if="${!addresses.empty}" class="space-y-4 mb-6">
+                        <h3 class="text-lg font-medium">Select Address</h3>
+                        <div th:each="address : ${addresses}"
+                            class="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 address-option"
+                            th:onclick="'selectAddress(' + ${address.id} + ')'">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h4 class="font-semibold" th:text="${address.name}">John Doe</h4>
+                                    <p th:text="${address.addressLine1}">123 Main Street</p>
+                                    <p th:text="${address.addressLine2}">Apt 4B</p>
+                                    <p th:text="${address.city + ', ' + address.state + ' - ' + address.postalCode}">
+                                        Mumbai, Maharashtra - 400001</p>
+                                    <p th:text="'Phone: ' + ${address.phone}">Phone: +91 9876543210</p>
+                                </div>
+                                <input type="radio" name="selectedAddress" th:value="${address.id}" class="mt-2">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add New Address Form -->
+                    <div class="border-t pt-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium">Add New Address</h3>
+                            <button type="button" id="use-location-btn"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center text-sm">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                Use My Current Location
+                            </button>
+                        </div>
+                        <form th:action="@{/checkout/address}" method="POST" id="new-address-form" class="space-y-4">
+                            <input type="hidden" name="userId" th:value="${userId}">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                                    <input type="text" name="name" required
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                                    <input type="tel" name="phone" required
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Address Line 1 *</label>
+                                <input type="text" name="addressLine1" required
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
+                                <input type="text" name="addressLine2"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                                    <input type="text" name="city" required
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                                    <input type="text" name="state" required
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">PIN Code *</label>
+                                    <input type="text" name="postalCode" required
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="6-digit PIN code">
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i> Add Address
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div>
+                <div class="bg-white rounded-lg shadow p-6 sticky top-4">
+                    <h3 class="text-xl font-semibold mb-4">Order Summary</h3>
+
+                    <!-- Cart Items -->
+                    <div class="space-y-3 mb-4" th:if="${cart != null and !cart.cartItems.empty}">
+                        <div th:each="item : ${cart.cartItems}" class="flex justify-between items-center py-2 border-b">
+                            <div class="flex items-center space-x-3">
+                                <img th:src="${item.product.imageUrl}" alt="Product"
+                                    class="w-12 h-12 object-cover rounded">
+                                <div>
+                                    <p class="font-medium text-sm" th:text="${item.product.name}"></p>
+                                    <p class="text-xs text-gray-500" th:text="'Qty: ' + ${item.quantity}"></p>
+                                </div>
+                            </div>
+                            <span class="font-semibold text-sm"
+                                th:text="'₹' + ${#numbers.formatDecimal(item.quantity * item.product.price, 1, 2)}"></span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 mb-6">
+                        <div class="flex justify-between">
+                            <span>Subtotal</span>
+                            <span th:text="'₹' + ${#numbers.formatDecimal(subtotal, 1, 2)}">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Delivery</span>
+                            <span th:text="'₹' + ${#numbers.formatDecimal(deliveryCharge, 1, 2)}">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between text-green-600" th:if="${discount > 0}">
+                            <span>Cluster Discount (15%)</span>
+                            <span th:text="'-₹' + ${#numbers.formatDecimal(discount, 1, 2)}">-₹0.00</span>
+                        </div>
+                        <div class="border-t pt-2">
+                            <div class="flex justify-between font-semibold text-lg">
+                                <span>Total</span>
+                                <span th:text="'₹' + ${#numbers.formatDecimal(total, 1, 2)}">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="proceed-to-payment" onclick="proceedToPayment()"
+                        class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        disabled>
+                        <i class="fas fa-credit-card mr-2"></i> Proceed to Payment
+                    </button>
+
+                    <p class="text-xs text-gray-500 mt-2 text-center">
+                        Please select a delivery address to continue
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmModal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">🛒</div>
+                <h2 class="modal-title">Confirm Your Order</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-info-row">
+                    <span class="modal-info-label">Items in Cart</span>
+                    <span class="modal-info-value" id="modal-items-count">-</span>
+                </div>
+                <div class="modal-info-row" style="border-bottom: none;">
+                    <span class="modal-info-label">Total Amount</span>
+                    <span class="modal-info-value" id="modal-total-amount">-</span>
+                </div>
+                <div class="modal-message">
+                    Are you sure you want to proceed to payment?
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" onclick="closeConfirmModal()">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmPayment()">
+                    <i class="fas fa-check mr-2"></i>Proceed
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="alertModal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon" id="alert-icon">ℹ️</div>
+                <h2 class="modal-title" id="alert-title">Alert</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-message" id="alert-message">
+                    This is an alert message.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-ok" onclick="closeAlertModal()" style="width: 100%;">
+                    <i class="fas fa-check mr-2"></i>OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedAddressId = null;
+        let pendingPaymentData = null;
+
+        // Custom Alert Function (using professional alerts)
+        function showAlert(message, title = 'Alert', icon = '⚠️') {
+            if (window.showWarning) {
+                window.showWarning(message, title);
+            } else {
+                // Fallback to old modal
+                document.getElementById('alert-icon').textContent = icon;
+                document.getElementById('alert-title').textContent = title;
+                document.getElementById('alert-message').textContent = message;
+                document.getElementById('alertModal').classList.add('active');
+            }
+        }
+
+        function closeAlertModal() {
+            document.getElementById('alertModal').classList.remove('active');
+        }
+
+        // Custom Confirm Function
+        function showConfirm(itemsCount, totalAmount) {
+            document.getElementById('modal-items-count').textContent = itemsCount;
+            document.getElementById('modal-total-amount').textContent = totalAmount;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            pendingPaymentData = null;
+        }
+
+        function confirmPayment() {
+            //closeConfirmModal();
+            if (pendingPaymentData) {
+                processPayment(pendingPaymentData);
+            }
+        }
+
+        function selectAddress(addressId) {
+            selectedAddressId = addressId;
+
+            // Update UI
+            document.querySelectorAll('.address-option').forEach(option => {
+                option.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+            });
+
+            event.currentTarget.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+            event.currentTarget.querySelector('input[type="radio"]').checked = true;
+
+            // Enable proceed button
+            document.getElementById('proceed-to-payment').disabled = false;
+            document.querySelector('.text-xs.text-gray-500').textContent = 'Ready to proceed to payment';
+        }
+
+        function proceedToPayment() {
+            if (!selectedAddressId) {
+                showAlert('Please select a delivery address', 'Address Required', '📍');
+                return;
+            }
+
+            // Get userId from the hidden input field
+            const userId = document.getElementById('current-user-id').value;
+            console.log('Debug - userId from hidden input:', userId);
+            console.log('Debug - userId type:', typeof userId);
+            console.log('Debug - userId length:', userId ? userId.length : 'null/undefined');
+            console.log('Debug - selectedAddressId:', selectedAddressId);
+
+            if (!userId || userId === 'null' || userId === 'undefined' || userId.trim() === '') {
+                showAlert('User ID not found. Please try again.', 'Error', '❌');
+                console.log('Debug - userId is empty, null, or undefined');
+                console.log('Debug - Hidden input element:', document.getElementById('current-user-id'));
+                console.log('Debug - Hidden input value:', document.getElementById('current-user-id').value);
+                return;
+            }
+
+            // Get total amount for confirmation
+            const totalElement = document.querySelector('.flex.justify-between.font-semibold.text-lg span:last-child');
+            const totalAmount = totalElement ? totalElement.textContent : 'Not available';
+
+            // Get cart items count
+            const cartItemsCount = document.querySelectorAll('.space-y-3 > div').length;
+
+            // Store pending payment data
+            pendingPaymentData = {
+                userId: userId,
+                addressId: selectedAddressId
+            };
+
+            // Show custom confirmation modal
+            showConfirm(cartItemsCount, totalAmount);
+        }
+
+        function processPayment(paymentData) {
+            console.log('Processing payment:', paymentData);
+
+            // Show processing state
+            const button = document.getElementById('proceed-to-payment');
+            if (button) {
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+                button.disabled = true;
+            }
+
+            // Redirect to payment with selected address and userId
+            const url = `/checkout/proceed-to-payment?addressId=${paymentData.addressId}&userId=${paymentData.userId}`;
+            console.log('Debug - Redirecting to URL:', url);
+            window.location.href = url;
+        }
+
+        function goToCart() {
+            const userId = document.getElementById('current-user-id').value;
+            if (!userId) {
+                showAlert('User ID not found. Please try again.', 'Error', '❌');
+                return;
+            }
+            window.location.href = `/cart/view?userId=${userId}`;
+        }
+
+        function logout() {
+            // Clear local storage
+            localStorage.clear();
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function updateCartCount() {
+            const userId = document.getElementById('current-user-id').value;
+            if (!userId) {
+                document.getElementById('cart-count').textContent = '0';
+                return;
+            }
+
+            fetch(`/cart?userId=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const count = data.items ? data.items.length : 0;
+                    document.getElementById('cart-count').textContent = count;
+                })
+                .catch(err => {
+                    console.error('Error fetching cart count:', err);
+                    document.getElementById('cart-count').textContent = '0';
+                });
+        }
+
+        // Initialize
+        updateCartCount();
+
+        // Debug: Check if userId is available
+        document.addEventListener('DOMContentLoaded', function () {
+            const userId = document.getElementById('current-user-id').value;
+            console.log('Debug - Page loaded, userId:', userId);
+            console.log('Debug - userId type:', typeof userId);
+            console.log('Debug - userId length:', userId ? userId.length : 'null/undefined');
+
+            // Location functionality
+            const useLocationBtn = document.getElementById('use-location-btn');
+            if (useLocationBtn) {
+                useLocationBtn.addEventListener('click', function () {
+                    useCurrentLocation('#new-address-form', {
+                        onSuccess: function (data) {
+                            console.log('Address filled successfully:', data);
+                        },
+                        onError: function (error) {
+                            console.error('Error filling address:', error);
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+
+    <!-- Chat Widget -->
+    <div th:replace="fragments/chat :: chatWidget"></div>
+</body>
+
+</html>

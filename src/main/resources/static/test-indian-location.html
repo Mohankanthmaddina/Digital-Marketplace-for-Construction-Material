@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Location Accuracy Test - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+    <script src="/js/location-service.js"></script>
+</head>
+<body class="min-h-screen bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Indian Location Accuracy Test</h1>
+        
+        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>
+                <div>
+                    <h3 class="font-semibold">Improved Accuracy for Indian Addresses</h3>
+                    <p class="text-sm mt-1">This test uses specialized APIs optimized for Indian postal codes, cities, and states.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Test Form -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">Test Address Form</h2>
+                <p class="text-gray-600 mb-4">Click "Use My Current Location" to test the improved accuracy.</p>
+                
+                <form id="test-address-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                            <input type="text" id="name" name="name" required 
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" required 
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Address Line 1 *</label>
+                        <input type="text" id="addressLine1" name="addressLine1" required 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
+                        <input type="text" id="addressLine2" name="addressLine2" 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                            <input type="text" id="city" name="city" required 
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                            <input type="text" id="state" name="state" required 
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">PIN Code *</label>
+                            <input type="text" id="postalCode" name="postalCode" required 
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                   placeholder="6-digit PIN code">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Country *</label>
+                        <input type="text" id="country" name="country" required 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" value="India">
+                    </div>
+                    
+                    <div class="flex gap-4 pt-4">
+                        <button type="button" id="use-location-btn" 
+                                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            Use My Current Location
+                        </button>
+                        
+                        <button type="button" id="clear-form-btn" 
+                                class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center">
+                            <i class="fas fa-eraser mr-2"></i>
+                            Clear Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Test Results -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">Test Results</h2>
+                <div id="test-results" class="space-y-2">
+                    <p class="text-gray-600">No tests run yet. Click "Use My Current Location" to test the improved accuracy.</p>
+                </div>
+                
+                <!-- API Information -->
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-semibold text-gray-800 mb-2">API Information</h3>
+                    <div class="text-sm text-gray-600 space-y-1">
+                        <p><strong>Primary:</strong> OpenStreetMap Nominatim (Free)</p>
+                        <p><strong>Secondary:</strong> Here Maps API (Free Tier)</p>
+                        <p><strong>Tertiary:</strong> Mapbox API (Free Tier)</p>
+                        <p><strong>Focus:</strong> Indian addresses only</p>
+                        <p><strong>Validation:</strong> 6-digit PIN codes (postal codes)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sample Test Locations -->
+        <div class="mt-8 bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Sample Test Locations</h2>
+            <p class="text-gray-600 mb-4">Click on any location to test the accuracy with known coordinates:</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="testLocation(28.6139, 77.2090, 'New Delhi')" 
+                        class="p-4 border rounded-lg hover:bg-gray-50 text-left">
+                    <h3 class="font-semibold">New Delhi</h3>
+                    <p class="text-sm text-gray-600">28.6139, 77.2090</p>
+                    <p class="text-xs text-blue-600 mt-1">Click to test</p>
+                </button>
+                
+                <button onclick="testLocation(19.0760, 72.8777, 'Mumbai')" 
+                        class="p-4 border rounded-lg hover:bg-gray-50 text-left">
+                    <h3 class="font-semibold">Mumbai</h3>
+                    <p class="text-sm text-gray-600">19.0760, 72.8777</p>
+                    <p class="text-xs text-blue-600 mt-1">Click to test</p>
+                </button>
+                
+                <button onclick="testLocation(12.9716, 77.5946, 'Bangalore')" 
+                        class="p-4 border rounded-lg hover:bg-gray-50 text-left">
+                    <h3 class="font-semibold">Bangalore</h3>
+                    <p class="text-sm text-gray-600">12.9716, 77.5946</p>
+                    <p class="text-xs text-blue-600 mt-1">Click to test</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const useLocationBtn = document.getElementById('use-location-btn');
+            const clearFormBtn = document.getElementById('clear-form-btn');
+            const testResults = document.getElementById('test-results');
+            
+            // Test location feature
+            useLocationBtn.addEventListener('click', function() {
+                testResults.innerHTML = '<p class="text-blue-600"><i class="fas fa-spinner fa-spin mr-2"></i>Testing improved location accuracy...</p>';
+                
+                useCurrentLocation('#test-address-form', {
+                    onSuccess: function(data) {
+                        const postalCode = data.addressDetails.postalCode;
+                        const city = data.addressDetails.city;
+                        const state = data.addressDetails.state;
+                        
+                        // Validate Indian PIN code
+                        const isValidPin = postalCode && postalCode.match(/^\d{6}$/);
+                        const hasValidCity = city && city !== 'Unknown' && city.length > 2;
+                        const hasValidState = state && state !== 'Unknown' && state.length > 2;
+                        
+                        let qualityScore = 0;
+                        let qualityIssues = [];
+                        
+                        if (isValidPin) qualityScore += 30;
+                        else qualityIssues.push('Invalid PIN code format');
+                        
+                        if (hasValidCity) qualityScore += 25;
+                        else qualityIssues.push('City information incomplete');
+                        
+                        if (hasValidState) qualityScore += 25;
+                        else qualityIssues.push('State information incomplete');
+                        
+                        if (data.addressDetails.addressLine1 && data.addressDetails.addressLine1 !== 'Current Location') qualityScore += 20;
+                        else qualityIssues.push('Street address incomplete');
+                        
+                        const qualityLevel = qualityScore >= 80 ? 'High' : qualityScore >= 60 ? 'Medium' : 'Low';
+                        const qualityColor = qualityLevel === 'High' ? 'green' : qualityLevel === 'Medium' ? 'yellow' : 'red';
+                        
+                        testResults.innerHTML = `
+                            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                                <h3 class="font-semibold">✅ Test Successful!</h3>
+                                <p class="mt-2">Location detected and address filled successfully.</p>
+                                <div class="mt-2 text-sm">
+                                    <p><strong>Coordinates:</strong> ${data.position.latitude.toFixed(6)}, ${data.position.longitude.toFixed(6)}</p>
+                                    <p><strong>GPS Accuracy:</strong> ${data.position.accuracy}m</p>
+                                    <p><strong>Address Quality:</strong> <span class="text-${qualityColor}-600 font-semibold">${qualityLevel} (${qualityScore}/100)</span></p>
+                                    <p><strong>Address:</strong> ${data.addressDetails.addressLine1}, ${data.addressDetails.city}, ${data.addressDetails.state} - ${data.addressDetails.postalCode}</p>
+                                    ${qualityIssues.length > 0 ? `<p><strong>Issues:</strong> ${qualityIssues.join(', ')}</p>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    },
+                    onError: function(error) {
+                        testResults.innerHTML = `
+                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                <h3 class="font-semibold">❌ Test Failed</h3>
+                                <p class="mt-2">Error: ${error.message}</p>
+                                <div class="mt-2 text-sm">
+                                    <p><strong>Possible solutions:</strong></p>
+                                    <ul class="list-disc list-inside mt-1">
+                                        <li>Allow location access in your browser</li>
+                                        <li>Make sure you're using HTTPS</li>
+                                        <li>Check if location services are enabled</li>
+                                        <li>Try refreshing the page</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            });
+            
+            // Clear form
+            clearFormBtn.addEventListener('click', function() {
+                document.getElementById('test-address-form').reset();
+                testResults.innerHTML = '<p class="text-gray-600">Form cleared. Ready for next test.</p>';
+            });
+        });
+        
+        // Test with specific coordinates
+        function testLocation(lat, lng, locationName) {
+            const testResults = document.getElementById('test-results');
+            testResults.innerHTML = `<p class="text-blue-600"><i class="fas fa-spinner fa-spin mr-2"></i>Testing ${locationName} location...</p>`;
+            
+            // Simulate location data
+            const mockPosition = {
+                latitude: lat,
+                longitude: lng,
+                accuracy: 10
+            };
+            
+            // Call the API directly
+            fetch(`/api/location/address?latitude=${lat}&longitude=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Fill the form
+                    document.getElementById('addressLine1').value = data.addressLine1 || '';
+                    document.getElementById('city').value = data.city || '';
+                    document.getElementById('state').value = data.state || '';
+                    document.getElementById('postalCode').value = data.postalCode || '';
+                    document.getElementById('country').value = data.country || 'India';
+                    
+                    // Show results
+                    const postalCode = data.postalCode;
+                    const city = data.city;
+                    const state = data.state;
+                    
+                    const isValidPin = postalCode && postalCode.match(/^\d{6}$/);
+                    const hasValidCity = city && city !== 'Unknown' && city.length > 2;
+                    const hasValidState = state && state !== 'Unknown' && state.length > 2;
+                    
+                    let qualityScore = 0;
+                    let qualityIssues = [];
+                    
+                    if (isValidPin) qualityScore += 30;
+                    else qualityIssues.push('Invalid PIN code format');
+                    
+                    if (hasValidCity) qualityScore += 25;
+                    else qualityIssues.push('City information incomplete');
+                    
+                    if (hasValidState) qualityScore += 25;
+                    else qualityIssues.push('State information incomplete');
+                    
+                    if (data.addressLine1 && data.addressLine1 !== 'Current Location') qualityScore += 20;
+                    else qualityIssues.push('Street address incomplete');
+                    
+                    const qualityLevel = qualityScore >= 80 ? 'High' : qualityScore >= 60 ? 'Medium' : 'Low';
+                    const qualityColor = qualityLevel === 'High' ? 'green' : qualityLevel === 'Medium' ? 'yellow' : 'red';
+                    
+                    testResults.innerHTML = `
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                            <h3 class="font-semibold">✅ ${locationName} Test Successful!</h3>
+                            <p class="mt-2">Location detected and address filled successfully.</p>
+                            <div class="mt-2 text-sm">
+                                <p><strong>Coordinates:</strong> ${lat}, ${lng}</p>
+                                <p><strong>Address Quality:</strong> <span class="text-${qualityColor}-600 font-semibold">${qualityLevel} (${qualityScore}/100)</span></p>
+                                <p><strong>Address:</strong> ${data.addressLine1}, ${data.city}, ${data.state} - ${data.postalCode}</p>
+                                ${qualityIssues.length > 0 ? `<p><strong>Issues:</strong> ${qualityIssues.join(', ')}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    testResults.innerHTML = `
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            <h3 class="font-semibold">❌ ${locationName} Test Failed</h3>
+                            <p class="mt-2">Error: ${error.message}</p>
+                        </div>
+                    `;
+                });
+        }
+    </script>
+</body>
+</html>

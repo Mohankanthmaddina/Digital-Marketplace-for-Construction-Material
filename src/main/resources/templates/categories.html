@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="/css/professional-alerts.css">
+  <script src="/js/professional-alerts.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categories - BUildPro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Beautiful Categories Theme */
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      --info-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      --glass-bg: rgba(255, 255, 255, 0.25);
+      --glass-border: rgba(255, 255, 255, 0.18);
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+
+    /* Enhanced navigation */
+    .navbar-glass {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Beautiful category cards */
+    .category-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .category-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--primary-gradient);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .category-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .category-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    /* Gradient text */
+    .gradient-text {
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Beautiful buttons */
+    .btn-primary {
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    }
+
+    /* Cart badge */
+    .cart-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    }
+
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .slide-up {
+      animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Profile menu positioning */
+    .navbar-glass {
+      position: relative;
+      z-index: 1000;
+    }
+
+    #profile-menu {
+      position: absolute !important;
+      z-index: 9999 !important;
+      top: 100% !important;
+      right: 0 !important;
+      margin-top: 8px !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .category-card {
+        margin-bottom: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+
+  <!-- Navbar -->
+  <nav class="navbar-glass py-4">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      <!-- Logo -->
+      <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/homepage'">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: var(--primary-gradient);">
+          <i class="fas fa-hard-hat text-white text-xl"></i>
+        </div>
+        <span class="text-2xl font-bold gradient-text">BuildPro</span>
+      </div>
+
+      <!-- Desktop Menu -->
+      <div class="hidden md:flex items-center space-x-8">
+        <a href="/homepage" class="text-gray-700 hover:text-blue-600 transition-colors">Home</a>
+        <a href="/categories/view" class="text-blue-600 font-semibold">Categories</a>
+        <a href="/products/view" class="text-gray-700 hover:text-blue-600 transition-colors">Products</a>
+      </div>
+
+      <!-- Right Section -->
+      <div class="flex items-center space-x-4">
+        <!-- Search Icon -->
+        <div class="relative cursor-pointer" onclick="openSearchModal()" title="Search Products">
+          <i class="fas fa-search text-xl text-gray-700 hover:text-blue-600 transition-colors"></i>
+        </div>
+
+        <!-- Cart Icon -->
+        <div class="relative cursor-pointer" onclick="goToCart()">
+          <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+          <span class="cart-badge" id="cart-count">0</span>
+        </div>
+
+        <!-- Profile Menu - Only show when logged in -->
+        <div id="profile-menu-container" class="relative hidden">
+          <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+            onclick="toggleProfileMenu()">
+            <i class="fas fa-user-circle text-2xl"></i>
+            <span class="hidden md:block">Profile</span>
+            <i class="fas fa-chevron-down text-sm"></i>
+          </button>
+          <div id="profile-menu" class="hidden w-48 bg-white rounded-lg py-2">
+            <a href="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+              <i class="fas fa-user mr-2"></i> My Profile
+            </a>
+            <a href="/profile/orders" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+              <i class="fas fa-shopping-bag mr-2"></i> My Orders
+            </a>
+            <a href="/profile/edit" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+              <i class="fas fa-edit mr-2"></i> Edit Profile
+            </a>
+            <hr class="my-2">
+            <a href="#" onclick="logout()" class="block px-4 py-2 text-red-600 hover:bg-gray-100">
+              <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </a>
+          </div>
+        </div>
+
+        <!-- Login/Logout Button - Desktop -->
+        <button id="auth-button-desktop" class="btn-primary hidden md:block" onclick="handleAuth()">
+          <i class="fas fa-sign-in-alt mr-2"></i>Login
+        </button>
+
+        <!-- Mobile Hamburger -->
+        <button id="menu-btn" class="md:hidden text-gray-700 text-2xl focus:outline-none">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden px-4 pt-4 pb-2 space-y-2 bg-gray-50">
+      <a href="/homepage" class="block text-gray-700 hover:text-blue-600">Home</a>
+      <a href="/categories/view" class="block text-blue-600 font-semibold">Categories</a>
+      <a href="/products/view" class="block text-gray-700 hover:text-blue-600">Products</a>
+
+      <!-- Mobile Profile Menu - Only show when logged in -->
+      <div id="mobile-profile-menu" class="hidden space-y-2">
+        <a href="/profile" class="block text-gray-700 hover:text-blue-600 transition-colors">
+          <i class="fas fa-user mr-2"></i> My Profile
+        </a>
+        <a href="/profile/orders" class="block text-gray-700 hover:text-blue-600 transition-colors">
+          <i class="fas fa-shopping-bag mr-2"></i> My Orders
+        </a>
+        <a href="/profile/edit" class="block text-gray-700 hover:text-blue-600 transition-colors">
+          <i class="fas fa-edit mr-2"></i> Edit Profile
+        </a>
+      </div>
+
+      <button id="auth-button-mobile" class="btn-primary w-full" onclick="handleAuth()">
+        <i class="fas fa-sign-in-alt mr-2"></i>Login
+      </button>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <div class="max-w-7xl mx-auto my-12 px-4">
+    <h2 class="text-5xl font-bold gradient-text mb-12 text-center slide-up">Qulaity Construction materials</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="category-list">
+      <!-- Categories will load here -->
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      updateCartCount();
+      updateAuthButtons();
+      fetchCategories();
+
+      // Mobile menu toggle
+      document.getElementById("menu-btn").addEventListener("click", function () {
+        document.getElementById("mobile-menu").classList.toggle("hidden");
+      });
+    });
+
+    function fetchCategories() {
+      fetch("/categories") // ✅ relative path (works on PC & mobile)
+        .then(response => response.json())
+        .then(data => {
+          const container = document.getElementById("category-list");
+          container.innerHTML = "";
+          data.forEach((category, index) => {
+            const div = document.createElement("div");
+            div.className = "category-card cursor-pointer slide-up";
+            div.style.animationDelay = `${index * 0.1}s`;
+            div.onclick = () => showProducts(category.id, category.name);
+
+            div.innerHTML = `
+            <div class="h-48 overflow-hidden rounded-t-2xl">
+              <img src="${category.imageUrl || 'https://via.placeholder.com/300'}" 
+                   alt="${category.name}" 
+                   class="w-full h-full object-cover">
+            </div>
+            <div class="p-6">
+              <h3 class="font-bold text-xl mb-3 gradient-text">${category.name}</h3>
+              <p class="text-gray-600 text-sm">${category.description || 'Explore our premium collection'}</p>
+            </div>
+          `;
+            container.appendChild(div);
+          });
+        })
+        .catch(err => console.error("Error fetching categories:", err));
+    }
+
+    function goToCart() {
+      const userId = localStorage.getItem("currentUserId");
+      if (!userId) {
+        showInfo("Please login first to view your cart!", "Alert");
+        window.location.href = "/login";
+        return;
+      }
+      window.location.href = `/cart/view?userId=${userId}`;
+    }
+
+    function showProducts(categoryId, categoryName) {
+      localStorage.setItem('selectedCategory', categoryName);
+      localStorage.setItem('selectedCategoryId', categoryId);
+      window.location.href = `/products/view?category=${encodeURIComponent(categoryName)}`;
+    }
+
+    function logout() {
+      // Clear local storage
+      localStorage.clear();
+
+      // Create a form to submit POST request for logout
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/logout';
+      document.body.appendChild(form);
+      form.submit();
+    }
+
+    function handleAuth() {
+      const userId = localStorage.getItem('currentUserId');
+      if (userId) {
+        logout();
+      } else {
+        window.location.href = '/login';
+      }
+    }
+
+    function updateAuthButtons() {
+      const userId = localStorage.getItem('currentUserId');
+      const authButtonDesktop = document.getElementById('auth-button-desktop');
+      const authButtonMobile = document.getElementById('auth-button-mobile');
+      const profileMenuContainer = document.getElementById('profile-menu-container');
+      const mobileProfileMenu = document.getElementById('mobile-profile-menu');
+
+      if (userId) {
+        // User is logged in - show logout button and profile menu
+        authButtonDesktop.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i>Logout';
+        authButtonMobile.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i>Logout';
+        profileMenuContainer.classList.remove('hidden');
+        mobileProfileMenu.classList.remove('hidden');
+      } else {
+        // User is not logged in - show login button and hide profile menu
+        authButtonDesktop.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Login';
+        authButtonMobile.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Login';
+        profileMenuContainer.classList.add('hidden');
+        mobileProfileMenu.classList.add('hidden');
+      }
+    }
+
+    function toggleProfileMenu() {
+      const menu = document.getElementById("profile-menu");
+      menu.classList.toggle("hidden");
+    }
+
+    function updateCartCount() {
+      const userId = localStorage.getItem('currentUserId');
+      if (!userId) {
+        document.getElementById('cart-count').textContent = '0';
+        return;
+      }
+
+      fetch(`/cart?userId=${userId}`)
+        .then(response => response.json())
+        .then(data => {
+          const count = data.items ? data.items.length : 0;
+          document.getElementById('cart-count').textContent = count;
+        })
+        .catch(err => {
+          console.error('Error fetching cart count:', err);
+          document.getElementById('cart-count').textContent = '0';
+        });
+    }
+
+    // Search functionality
+    function openSearchModal() {
+      document.getElementById('searchModal').classList.remove('hidden');
+      document.getElementById('searchInput').focus();
+    }
+
+    function closeSearchModal() {
+      document.getElementById('searchModal').classList.add('hidden');
+      document.getElementById('searchInput').value = '';
+    }
+
+    function performSearch() {
+      const query = document.getElementById('searchInput').value.trim();
+      if (query.length < 2) {
+        alert('Please enter at least 2 characters to search');
+        return;
+      }
+
+      // Redirect to search results page
+      window.location.href = `/products/search-results?q=${encodeURIComponent(query)}`;
+    }
+
+    function viewProduct(productId) {
+      window.location.href = `/products/${productId}`;
+    }
+
+    // Handle Enter key in search
+    document.addEventListener('DOMContentLoaded', function () {
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('keypress', function (e) {
+          if (e.key === 'Enter') {
+            performSearch();
+          }
+        });
+      }
+    });
+  </script>
+
+  <!-- Search Modal -->
+  <div id="searchModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b">
+          <h2 class="text-xl font-semibold text-gray-800">Search Products</h2>
+          <button onclick="closeSearchModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Search Input -->
+        <div class="p-6">
+          <form onsubmit="performSearch(); return false;">
+            <div class="relative">
+              <input type="text" id="searchInput" placeholder="Search for products, brands, or categories..."
+                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
+              <button type="submit"
+                class="absolute right-2 top-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Search
+              </button>
+            </div>
+          </form>
+          <p class="text-gray-500 text-sm mt-3 text-center">
+            <i class="fas fa-info-circle mr-1"></i>
+            Enter at least 2 characters and press Search or Enter
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Widget -->
+  <div th:replace="fragments/chat :: chatWidget"></div>
+</body>
+
+</html>

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Inline Professional Alerts CSS */
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .professional-alert {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 16px;
+            padding: 0;
+            overflow: hidden;
+            pointer-events: auto;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-left: 4px solid;
+            position: relative;
+        }
+
+        .professional-alert.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .professional-alert.hide {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .alert-header {
+            padding: 20px 24px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .alert-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            flex: 1;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            color: #6b7280;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+        }
+
+        .alert-close:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .alert-body {
+            padding: 0 24px 20px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #4b5563;
+        }
+
+        .alert-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 0 0 12px 12px;
+            animation: progressBar 5s linear forwards;
+        }
+
+        @keyframes progressBar {
+            from {
+                width: 100%;
+            }
+
+            to {
+                width: 0%;
+            }
+        }
+
+        /* Success Alert */
+        .alert-success {
+            border-left-color: #10b981;
+        }
+
+        .alert-success .alert-icon {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-success .alert-title {
+            color: #065f46;
+        }
+
+        /* Error Alert */
+        .alert-error {
+            border-left-color: #ef4444;
+        }
+
+        .alert-error .alert-icon {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-error .alert-title {
+            color: #991b1b;
+        }
+
+        /* Warning Alert */
+        .alert-warning {
+            border-left-color: #f59e0b;
+        }
+
+        .alert-warning .alert-icon {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-warning .alert-title {
+            color: #92400e;
+        }
+
+        /* Info Alert */
+        .alert-info {
+            border-left-color: #3b82f6;
+        }
+
+        .alert-info .alert-icon {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .alert-info .alert-title {
+            color: #1e40af;
+        }
+
+        /* Loading Alert */
+        .alert-loading {
+            border-left-color: #6b7280;
+        }
+
+        .alert-loading .alert-icon {
+            background: #f3f4f6;
+            color: #374151;
+            animation: spin 1s linear infinite;
+        }
+
+        .alert-loading .alert-title {
+            color: #374151;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 640px) {
+            .alert-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/homepage'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro</span>
+                </div>
+                <a href="login.html" class="text-blue-600 hover:text-blue-800">← Back to Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-md mx-auto my-12 bg-white rounded-xl shadow-xl p-8">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">Create Account</h2>
+            <p class="text-gray-600">Join our construction community</p>
+        </div>
+
+        <form id="register-form">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Full Name</label>
+                <input type="text"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    placeholder="Enter your full name" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Email Address</label>
+                <input type="email"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    placeholder="Enter your email" required>
+            </div>
+
+            <!-- Role Selection -->
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Register As</label>
+                <select
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    required>
+                    <option value="USER">User</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Password</label>
+                <input type="password"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    placeholder="Create a password" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Confirm Password</label>
+                <input type="password"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    placeholder="Confirm your password" required>
+            </div>
+
+            <div class="mb-6">
+                <button type="button"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                    onclick="sendOTP()">
+                    Send OTP Verification
+                </button>
+            </div>
+
+            <div class="text-center">
+                <p class="text-gray-600">
+                    Already have an account?
+                    <a href="login" class="text-blue-600 hover:underline">Sign in here</a>
+                </p>
+            </div>
+        </form>
+
+        <!-- Email Verification Section (Initially Hidden) -->
+        <div id="email-verification-section" class="hidden space-y-6">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center">
+                    <i class="fas fa-envelope text-blue-600 mr-3"></i>
+                    <div>
+                        <h3 class="font-semibold text-blue-800">Email Verification Required</h3>
+                        <p class="text-sm text-blue-700 mt-1">We've sent a verification code to <span
+                                id="verification-email" class="font-semibold"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label for="otp" class="block text-sm font-medium text-gray-700 mb-2">Enter Verification Code</label>
+                <div class="flex space-x-2">
+                    <input type="text" id="otp" name="otp" maxlength="6" placeholder="000000"
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 text-center text-lg font-mono tracking-widest">
+                    <button type="button" onclick="verifyOTP()" id="verify-btn"
+                        class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                        Verify
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <button type="button" onclick="resendOTP()" id="resend-btn"
+                    class="text-blue-600 hover:text-blue-800 font-medium text-sm">
+                    <i class="fas fa-redo mr-1"></i>Resend OTP
+                </button>
+                <button type="button" onclick="goBackToRegistration()" id="back-btn"
+                    class="text-gray-600 hover:text-gray-800 font-medium text-sm">
+                    <i class="fas fa-arrow-left mr-1"></i>Back to Registration
+                </button>
+            </div>
+
+            <div id="otp-timer" class="text-center text-sm text-gray-600 hidden">
+                <i class="fas fa-clock mr-1"></i>
+                Resend OTP in <span id="countdown">60</span> seconds
+            </div>
+        </div>
+
+        <!-- Success Section (Initially Hidden) -->
+        <div id="success-section" class="hidden text-center space-y-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                <i class="fas fa-check-circle text-green-600 text-4xl mb-4"></i>
+                <h3 class="text-xl font-semibold text-green-800 mb-2">Registration Successful!</h3>
+                <p class="text-green-700">Your account has been created and verified successfully.</p>
+            </div>
+            <button onclick="redirectToLogin()"
+                class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                Go to Login
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let alertCounter = 0;
+        let alerts = new Map();
+
+        // Inline Professional Alerts System
+        function initAlerts() {
+            if (!document.getElementById('alert-container')) {
+                const container = document.createElement('div');
+                container.id = 'alert-container';
+                container.className = 'alert-container';
+                document.body.appendChild(container);
+            }
+        }
+
+        function showAlert(type, message, title, options = {}) {
+            const {
+                duration = 5000,
+                showClose = true,
+                persistent = false
+            } = options;
+
+            const alertId = `alert-${++alertCounter}`;
+            const alert = document.createElement('div');
+            alert.id = alertId;
+            alert.className = `professional-alert alert-${type}`;
+
+            const icon = getIcon(type);
+            const closeButton = showClose ? createCloseButton(alertId) : '';
+            const progress = !persistent ? '<div class="alert-progress"></div>' : '';
+
+            alert.innerHTML = `
+                <div class="alert-header">
+                    <div class="alert-icon">${icon}</div>
+                    <h3 class="alert-title">${title}</h3>
+                    ${closeButton}
+                </div>
+                <div class="alert-body">${message}</div>
+                ${progress}
+            `;
+
+            const container = document.getElementById('alert-container');
+            container.appendChild(alert);
+            alerts.set(alertId, alert);
+
+            setTimeout(() => {
+                alert.classList.add('show');
+            }, 10);
+
+            if (!persistent && duration > 0) {
+                setTimeout(() => {
+                    hideAlert(alertId);
+                }, duration);
+            }
+
+            return alertId;
+        }
+
+        function hideAlert(alertId) {
+            const alert = alerts.get(alertId);
+            if (alert) {
+                alert.classList.add('hide');
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                    alerts.delete(alertId);
+                }, 300);
+            }
+        }
+
+        function getIcon(type) {
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠',
+                info: 'ℹ',
+                loading: '⟳'
+            };
+            return icons[type] || icons.info;
+        }
+
+        function createCloseButton(alertId) {
+            return `<button class="alert-close" onclick="hideAlert('${alertId}')" aria-label="Close">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>`;
+        }
+
+        // Alert Functions
+        function showSuccess(message, title = 'Success') {
+            return showAlert('success', message, title);
+        }
+
+        function showError(message, title = 'Error') {
+            return showAlert('error', message, title);
+        }
+
+        function showWarning(message, title = 'Warning') {
+            return showAlert('warning', message, title);
+        }
+
+        function showInfo(message, title = 'Information') {
+            return showAlert('info', message, title);
+        }
+
+        function showLoading(message, title = 'Loading') {
+            return showAlert('loading', message, title, { persistent: true, showClose: false });
+        }
+
+        function showLoadingState(message) {
+            return showLoading(message, 'Please Wait');
+        }
+
+        function hideLoadingState(alertId) {
+            if (alertId) {
+                hideAlert(alertId);
+            }
+        }
+
+        let registrationData = null;
+        let otpTimer = null;
+
+        async function sendOTP() {
+            const form = document.getElementById('register-form');
+            const name = form[0].value;
+            const email = form[1].value;
+            const role = form[2].value;   // ✅ role selection (USER / ADMIN)
+            const password = form[3].value;
+            const confirmPassword = form[4].value;
+
+            if (password !== confirmPassword) {
+                showError("Passwords do not match! Please check and try again.", 'Password Mismatch');
+                return;
+            }
+
+            if (form.checkValidity()) {
+                // Show loading state
+                const loadingId = showLoadingState('Validating email and creating account...');
+
+                try {
+                    const response = await fetch("/register", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ name, email, password, role }) // ✅ send role also
+                    });
+
+                    hideLoadingState(loadingId);
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+
+                        // Handle different error types with professional alerts
+                        if (errorData.type === 'email_exists') {
+                            showError(errorData.message, 'Email Already Exists');
+                        } else if (errorData.type === 'email_invalid') {
+                            showError(errorData.message, 'Invalid Email Address');
+                        } else if (errorData.type === 'email_validation_error') {
+                            showError(errorData.message, 'Email Validation Failed');
+                        } else if (errorData.type === 'invalid_role') {
+                            showError(errorData.message, 'Invalid Role');
+                        } else if (errorData.type === 'registration_error') {
+                            showError(errorData.message, 'Registration Failed');
+                        } else {
+                            showError(errorData.message || 'Registration failed. Please try again.', 'Registration Error');
+                        }
+                        return;
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Store registration data for later use
+                        registrationData = { name, email, password, role };
+
+                        // Show email verification section
+                        showEmailVerificationSection(email);
+                        showSuccess(data.message, 'OTP Sent Successfully');
+
+                        // Start OTP timer
+                        startOTPTimer();
+                    } else {
+                        showError(data.message || 'Registration failed. Please try again.', 'Registration Error');
+                    }
+                } catch (err) {
+                    hideLoadingState(loadingId);
+                    showError("Network error. Please check your connection and try again.", 'Connection Error');
+                    console.error('Registration error:', err);
+                }
+            } else {
+                showWarning("Please fill in all required fields correctly.", 'Form Validation');
+                form.reportValidity();
+            }
+        }
+
+        function showEmailVerificationSection(email) {
+            // Hide registration form
+            document.getElementById('register-form').style.display = 'none';
+
+            // Show email verification section
+            document.getElementById('email-verification-section').classList.remove('hidden');
+
+            // Set email in verification section
+            document.getElementById('verification-email').textContent = email;
+
+            // Focus on OTP input
+            setTimeout(() => {
+                document.getElementById('otp').focus();
+            }, 100);
+        }
+
+        function goBackToRegistration() {
+            // Show registration form
+            document.getElementById('register-form').style.display = 'block';
+
+            // Hide email verification section
+            document.getElementById('email-verification-section').classList.add('hidden');
+
+            // Clear OTP input
+            document.getElementById('otp').value = '';
+
+            // Stop timer
+            if (otpTimer) {
+                clearInterval(otpTimer);
+                otpTimer = null;
+            }
+
+            // Reset timer display
+            document.getElementById('otp-timer').classList.add('hidden');
+        }
+
+        async function verifyOTP() {
+            const otp = document.getElementById('otp').value;
+
+            if (!otp || otp.length !== 6) {
+                showError('Please enter a valid 6-digit OTP code.', 'Invalid OTP');
+                return;
+            }
+
+            if (!registrationData) {
+                showError('Registration data not found. Please start over.', 'Session Error');
+                return;
+            }
+
+            const loadingId = showLoadingState('Verifying OTP...');
+
+            try {
+                const response = await fetch("/registration-verification", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: registrationData.email,
+                        otp: otp
+                    })
+                });
+
+                hideLoadingState(loadingId);
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showSuccess('Email verified successfully!', 'Verification Successful');
+                        showSuccessSection();
+                    } else {
+                        showError(data.message || 'OTP verification failed.', 'Verification Failed');
+                    }
+                } else {
+                    const errorData = await response.json();
+                    showError(errorData.message || 'OTP verification failed.', 'Verification Error');
+                }
+            } catch (err) {
+                hideLoadingState(loadingId);
+                showError("Network error. Please check your connection and try again.", 'Connection Error');
+                console.error('OTP verification error:', err);
+            }
+        }
+
+        async function resendOTP() {
+            if (!registrationData) {
+                showError('Registration data not found. Please start over.', 'Session Error');
+                return;
+            }
+
+            const loadingId = showLoadingState('Resending OTP...');
+
+            try {
+                const response = await fetch("/resend-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: registrationData.email })
+                });
+
+                hideLoadingState(loadingId);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showSuccess(data.message || 'OTP resent successfully!', 'OTP Resent');
+
+                    // Restart timer
+                    startOTPTimer();
+                } else {
+                    const errorData = await response.json();
+                    showError(errorData.message || 'Failed to resend OTP.', 'Resend Failed');
+                }
+            } catch (err) {
+                hideLoadingState(loadingId);
+                showError("Network error. Please check your connection and try again.", 'Connection Error');
+                console.error('Resend OTP error:', err);
+            }
+        }
+
+        function showSuccessSection() {
+            // Hide email verification section
+            document.getElementById('email-verification-section').classList.add('hidden');
+
+            // Show success section
+            document.getElementById('success-section').classList.remove('hidden');
+
+            // Stop timer
+            if (otpTimer) {
+                clearInterval(otpTimer);
+                otpTimer = null;
+            }
+        }
+
+        function redirectToLogin() {
+            window.location.href = '/login';
+        }
+
+        function startOTPTimer() {
+            let timeLeft = 60;
+            const timerElement = document.getElementById('otp-timer');
+            const countdownElement = document.getElementById('countdown');
+            const resendBtn = document.getElementById('resend-btn');
+
+            // Show timer
+            timerElement.classList.remove('hidden');
+            resendBtn.disabled = true;
+            resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            otpTimer = setInterval(() => {
+                timeLeft--;
+                countdownElement.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(otpTimer);
+                    otpTimer = null;
+
+                    // Hide timer and enable resend button
+                    timerElement.classList.add('hidden');
+                    resendBtn.disabled = false;
+                    resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }, 1000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Registration page loaded');
+            initAlerts();
+        });
+    </script>
+
+</body>
+
+</html>

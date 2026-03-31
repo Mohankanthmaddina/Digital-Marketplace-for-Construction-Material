@@ -1,0 +1,33 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.example:buildpro:jar:0.0.1-SNAPSHOT
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.springframework.boot:spring-boot-starter-test:jar -> duplicate declaration of version (?) @ line 86, column 15
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] ------------------------< com.example:buildpro >------------------------
+[INFO] Building BuildProApplication 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ buildpro ---
+[INFO] Deleting C:\Users\mohankanthmaddina\Desktop\New folder (2)\E-commerce\E-commerce-Website-for-Construction\E-commerce-Website-for-Construction-Materials-Java-Full-Stack-Web-Application\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ buildpro ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 53 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ buildpro ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 75 source files with javac [debug parameters release 17] to target\classes
+[INFO] /C:/Users/mohankanthmaddina/Desktop/New folder (2)/E-commerce/E-commerce-Website-for-Construction/E-commerce-Website-for-Construction-Materials-Java-Full-Stack-Web-Application/src/main/java/com/example/buildpro/service/GeminiService.java: C:\Users\mohankanthmaddina\Desktop\New folder (2)\E-commerce\E-commerce-Website-for-Construction\E-commerce-Website-for-Construction-Materials-Java-Full-Stack-Web-Application\src\main\java\com\example\buildpro\service\GeminiService.java uses unchecked or unsafe operations.
+[INFO] /C:/Users/mohankanthmaddina/Desktop/New folder (2)/E-commerce/E-commerce-Website-for-Construction/E-commerce-Website-for-Construction-Materials-Java-Full-Stack-Web-Application/src/main/java/com/example/buildpro/service/GeminiService.java: Recompile with -Xlint:unchecked for details.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.658 s
+[INFO] Finished at: 2026-02-07T20:36:55+05:30
+[INFO] ------------------------------------------------------------------------

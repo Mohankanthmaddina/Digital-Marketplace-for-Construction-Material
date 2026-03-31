@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Now Checkout - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .checkout-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            background: #f9fafb;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .product-card {
+            display: flex;
+            gap: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .product-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .product-brand {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .product-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .product-quantity {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
+        .address-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .address-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .address-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .address-card input[type="radio"] {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+        }
+
+        .address-name {
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .address-details {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .add-address-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-address-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .payment-option {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .payment-option:hover {
+            border-color: #667eea;
+        }
+
+        .payment-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .payment-icon {
+            font-size: 24px;
+            color: #667eea;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .summary-row.total {
+            border-bottom: none;
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            padding-top: 16px;
+        }
+
+        .place-order-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .place-order-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .place-order-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .discount-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
+        }
+
+        .alert.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Back Button -->
+        <a th:href="@{/products/view/{id}(id=${product.id})}" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Back to Product
+        </a>
+
+        <!-- Main Checkout Card -->
+        <div class="checkout-card">
+            <!-- Header -->
+            <div class="header">
+                <h1><i class="fas fa-bolt"></i> Buy Now Checkout</h1>
+                <p>Complete your purchase in just a few clicks</p>
+            </div>
+
+            <!-- Alert Messages -->
+            <div style="padding: 20px 30px 0;">
+                <div th:if="${param.error}" class="alert error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span th:text="${param.error[0]}">Error message</span>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <!-- Left Column: Product & Address -->
+                <div>
+                    <!-- Product Details Section -->
+                    <div class="section">
+                        <div class="section-title">
+                            <i class="fas fa-box"></i>
+                            Product Details
+                        </div>
+                        <div class="product-card">
+                            <img th:src="${product.imageUrl}" alt="Product" class="product-image">
+                            <div class="product-info">
+                                <div class="product-name" th:text="${product.name}">Product Name</div>
+                                <div class="product-brand" th:text="${product.brand}">Brand Name</div>
+                                <div class="product-price">
+                                    ₹<span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">0.00</span>
+                                </div>
+                                <div class="product-quantity">
+                                    Quantity: <strong th:text="${quantity}">1</strong>
+                                </div>
+                                <div th:if="${discount > 0}" class="discount-badge">
+                                    <i class="fas fa-tag"></i> Discount Applied!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Address Section -->
+                    <div class="section">
+                        <div class="section-title">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Select Delivery Address
+                        </div>
+
+                        <div th:if="${addresses.isEmpty()}">
+                            <p style="color: #6b7280; margin-bottom: 16px;">
+                                <i class="fas fa-info-circle"></i> You don't have any saved addresses.
+                            </p>
+                        </div>
+
+                        <div th:each="address : ${addresses}">
+                            <div class="address-card" th:id="'address-' + ${address.id}" 
+                                 onclick="selectAddress(this, [[${address.id}]])">
+                                <input type="radio" name="addressId" th:value="${address.id}" 
+                                       th:id="'radio-' + ${address.id}">
+                                <div class="address-name" th:text="${address.name}">Full Name</div>
+                                <div class="address-details">
+                                    <div th:text="${address.addressLine1}">Address Line 1</div>
+                                    <div th:if="${address.addressLine2}" 
+                                         th:text="${address.addressLine2}">Address Line 2</div>
+                                    <div>
+                                        <span th:text="${address.city}">City</span>, 
+                                        <span th:text="${address.state}">State</span> - 
+                                        <span th:text="${address.postalCode}">Postal Code</span>
+                                    </div>
+                                    <div th:if="${address.phone}">
+                                        <i class="fas fa-phone"></i> 
+                                        <span th:text="${address.phone}">Phone</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add New Address Form (Initially Hidden) -->
+                        <div id="newAddressSection" style="display: none; border-top: 2px solid #e5e7eb; padding-top: 20px; margin-top: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="font-size: 18px; font-weight: 600; color: #1f2937;">Add New Address</h3>
+                                <button type="button" onclick="hideAddressForm()" style="color: #6b7280; background: none; border: none; cursor: pointer; font-size: 20px;">&times;</button>
+                            </div>
+
+                            <form th:action="@{/buynow/add-address}" method="post" id="addAddressForm">
+                                <input type="hidden" name="productId" th:value="${productId}">
+                                <input type="hidden" name="userId" th:value="${userId}">
+                                <input type="hidden" name="quantity" th:value="${quantity}">
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                                    <div>
+                                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">Full Name *</label>
+                                        <input type="text" name="name" required 
+                                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.3s;"
+                                               onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                                               onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+                                               placeholder="Enter full name">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">Phone Number *</label>
+                                        <input type="tel" name="phone" required pattern="[0-9]{10}"
+                                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.3s;"
+                                               onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                                               onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+                                               placeholder="10-digit number">
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">Address Line 1 *</label>
+                                    <input type="text" name="addressLine1" required
+                                           style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.3s;"
+                                           onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                                           onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+                                           placeholder="House No., Building Name">
+                                </div>
+
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">Address Line 2</label>
+                                    <input type="text" name="addressLine2"
+                                           style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.3s;"
+                                           onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                                           onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+                                           placeholder="Street, Locality (Optional)">
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                                    <div>
+                                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">City *</label>
+                                        <input type="text" name="city" required
+                                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.3s;"
+                                               onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                                               onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+                                               placeholder="City">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">State *</label>
+                                        <input type="text" name="state" required
+                                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.3s;"
+                                               onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                                               onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+                                               placeholder="State">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">Postal Code *</label>
+                                        <input type="text" name="postalCode" required pattern="[0-9]{6}"
+                                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.3s;"
+                                               onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                                               onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+                                               placeholder="6-digit PIN">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="add-address-btn">
+                                    <i class="fas fa-save"></i> Save Address
+                                </button>
+                            </form>
+                        </div>
+
+                        <button class="add-address-btn" id="showAddressBtn" onclick="showAddressForm()">
+                            <i class="fas fa-plus"></i> Add New Address
+                        </button>
+                    </div>
+
+                    <!-- Payment Method Section -->
+                    <div class="section">
+                        <div class="section-title">
+                            <i class="fas fa-credit-card"></i>
+                            Payment Method
+                        </div>
+
+                        <div class="payment-option selected" id="payment-cod" onclick="selectPayment('cod', this)">
+                            <input type="radio" name="paymentMethod" value="cod" checked>
+                            <div class="payment-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: bold; color: #1f2937;">Cash on Delivery</div>
+                                <div style="font-size: 12px; color: #6b7280;">Pay when you receive the product</div>
+                            </div>
+                        </div>
+
+                        <div class="payment-option" id="payment-online" onclick="selectPayment('online', this)">
+                            <div class="payment-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: bold; color: #1f2937;">Online Payment</div>
+                                <div style="font-size: 12px; color: #6b7280;">Pay via UPI, Cards, Netbanking</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Order Summary -->
+                <div>
+                    <div class="section">
+                        <div class="section-title">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            Order Summary
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span>₹<span th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span></span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Quantity</span>
+                            <span th:text="${quantity}">1</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Delivery Charge</span>
+                            <span>₹<span th:text="${#numbers.formatDecimal(deliveryCharge, 1, 2)}">0.00</span></span>
+                        </div>
+
+                        <div class="summary-row" th:if="${discount > 0}">
+                            <span style="color: #10b981;">
+                                <i class="fas fa-gift"></i> Discount
+                            </span>
+                            <span style="color: #10b981;">
+                                -₹<span th:text="${#numbers.formatDecimal(discount, 1, 2)}">0.00</span>
+                            </span>
+                        </div>
+
+                        <div class="summary-row total">
+                            <span>Total Amount</span>
+                            <span>₹<span th:text="${#numbers.formatDecimal(total, 1, 2)}">0.00</span></span>
+                        </div>
+
+                        <button class="place-order-btn" onclick="placeOrder()">
+                            <i class="fas fa-check-circle"></i> Place Order
+                        </button>
+
+                        <div style="text-align: center; margin-top: 16px; color: #6b7280; font-size: 13px;">
+                            <i class="fas fa-shield-alt"></i> Secure Checkout
+                        </div>
+                    </div>
+
+                    <!-- Delivery Info -->
+                    <div class="section" style="background: #fef3c7; border: 1px solid #fbbf24;">
+                        <div style="color: #92400e; font-size: 14px;">
+                            <div style="font-weight: bold; margin-bottom: 8px;">
+                                <i class="fas fa-truck"></i> Delivery Information
+                            </div>
+                            <div style="line-height: 1.6;">
+                                • Free delivery within 10km<br>
+                                • Get 15% discount on delivery when orders cluster within 20km radius<br>
+                                • Expected delivery: 3-5 business days
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedAddressId = null;
+        let selectedPaymentMethod = 'cod';
+
+        function showAddressForm() {
+            document.getElementById('newAddressSection').style.display = 'block';
+            document.getElementById('showAddressBtn').style.display = 'none';
+            // Smooth scroll to form
+            document.getElementById('newAddressSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function hideAddressForm() {
+            document.getElementById('newAddressSection').style.display = 'none';
+            document.getElementById('showAddressBtn').style.display = 'block';
+        }
+
+        function selectAddress(element, addressId) {
+            // Remove selected class from all address cards
+            document.querySelectorAll('.address-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selected class to clicked card
+            element.classList.add('selected');
+
+            // Check the radio button
+            document.getElementById('radio-' + addressId).checked = true;
+            selectedAddressId = addressId;
+        }
+
+        function selectPayment(method, element) {
+            // Remove selected class from all payment options
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            selectedPaymentMethod = method;
+        }
+
+        function placeOrder() {
+            // Validate address selection
+            if (!selectedAddressId) {
+                const firstAddress = document.querySelector('input[name="addressId"]');
+                if (firstAddress) {
+                    selectedAddressId = firstAddress.value;
+                    const firstCard = document.querySelector('.address-card');
+                    if (firstCard) {
+                        firstCard.classList.add('selected');
+                        firstAddress.checked = true;
+                    }
+                }
+            }
+
+            if (!selectedAddressId) {
+                alert('Please select a delivery address');
+                return;
+            }
+
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            button.disabled = true;
+
+            // Build URL with all parameters
+            const userId = [[${userId}]];
+            const productId = [[${productId}]];
+            const quantity = [[${quantity}]];
+            
+            if (selectedPaymentMethod === 'cod') {
+                const url = `/buynow/process?productId=${productId}&userId=${userId}&addressId=${selectedAddressId}&quantity=${quantity}&paymentMethod=cod`;
+                window.location.href = url;
+            } else if (selectedPaymentMethod === 'online') {
+                fetch('/buynow/create-razorpay-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        productId: productId,
+                        userId: userId,
+                        quantity: quantity
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        var options = {
+                            "key": data.keyId,
+                            "amount": data.amount * 100, // already in paise conceptually but the backend sent original amount in rs. Wait, let's verify data.amount
+                            "currency": data.currency,
+                            "name": "BuildPro",
+                            "description": "Direct Purchase Payment",
+                            "order_id": data.razorpayOrderId,
+                            "handler": function (response) {
+                                // Payment succeeded! Verification process
+                                const formData = new URLSearchParams();
+                                formData.append('productId', productId);
+                                formData.append('userId', userId);
+                                formData.append('addressId', selectedAddressId);
+                                formData.append('quantity', quantity);
+                                formData.append('razorpayPaymentId', response.razorpay_payment_id);
+                                formData.append('razorpayOrderId', response.razorpay_order_id);
+                                formData.append('razorpaySignature', response.razorpay_signature);
+
+                                fetch('/buynow/process-online', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                    body: formData
+                                })
+                                .then(res2 => res2.json())
+                                .then(data2 => {
+                                    if (data2.success) {
+                                        window.location.href = data2.redirectUrl;
+                                    } else {
+                                        alert("Payment verification failed: " + data2.message);
+                                        button.innerHTML = originalText;
+                                        button.disabled = false;
+                                    }
+                                })
+                                .catch(err => {
+                                    alert("Error validating payment details.");
+                                    button.innerHTML = originalText;
+                                    button.disabled = false;
+                                });
+                            },
+                            "theme": {
+                                "color": "#2563eb"
+                            }
+                        };
+                        var rzp1 = new Razorpay(options);
+                        rzp1.on('payment.failed', function (response) {
+                            alert("Payment failed: " + response.error.description);
+                            button.innerHTML = originalText;
+                            button.disabled = false;
+                        });
+                        rzp1.open();
+                    } else {
+                        alert(data.message);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error creating order:', err);
+                    alert('Error initiating payment gateway');
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                });
+            }
+        }
+
+        // Auto-select first address if only one exists
+        window.addEventListener('DOMContentLoaded', function() {
+            const addresses = document.querySelectorAll('.address-card');
+            if (addresses.length === 1) {
+                const firstAddress = addresses[0];
+                const addressId = firstAddress.querySelector('input[type="radio"]').value;
+                selectAddress(firstAddress, addressId);
+            }
+        });
+    </script>
+</body>
+</html>
+

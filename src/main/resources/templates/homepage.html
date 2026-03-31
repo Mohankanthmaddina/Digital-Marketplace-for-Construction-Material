@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuildPro - Construction MarketPlace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Beautiful Homepage Theme */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --info-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.18);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        /* Glass morphism effect */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        /* Enhanced navigation */
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Beautiful cards with hover effects */
+        .beautiful-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .beautiful-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .beautiful-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .beautiful-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* Gradient text */
+        .gradient-text {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Beautiful buttons */
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.6);
+        }
+
+        /* Hero section */
+        .hero-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 48px;
+            margin: 32px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Feature cards */
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* Icon containers with gradients */
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin: 0 auto 24px;
+            transition: all 0.3s ease;
+        }
+
+        .icon-container.blue {
+            background: var(--primary-gradient);
+        }
+
+        .icon-container.green {
+            background: var(--success-gradient);
+        }
+
+        .icon-container.yellow {
+            background: var(--warning-gradient);
+        }
+
+        .icon-container.pink {
+            background: var(--info-gradient);
+        }
+
+        .feature-card:hover .icon-container {
+            transform: scale(1.1);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Cart badge */
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+        }
+
+        /* Profile menu positioning */
+        .navbar-glass {
+            position: relative;
+            z-index: 1000;
+        }
+
+        #profile-menu {
+            position: absolute !important;
+            z-index: 9999 !important;
+            top: 100% !important;
+            right: 0 !important;
+            margin-top: 8px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .beautiful-card {
+                margin-bottom: 16px;
+            }
+
+            .feature-card {
+                margin-bottom: 16px;
+            }
+
+            .hero-section {
+                padding: 24px;
+                margin: 16px 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <!-- Navigation -->
+    <nav class="navbar-glass py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/homepage'">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center"
+                        style="background: var(--primary-gradient);">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold gradient-text">BuildPro</span>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/homepage" class="text-gray-700 hover:text-blue-600 transition-colors">Home</a>
+                    <a href="categories/view" class="text-gray-700 hover:text-blue-600 transition-colors">Categories</a>
+                    <a href="products/view" class="text-gray-700 hover:text-blue-600 transition-colors">Products</a>
+                </div>
+
+                <!-- Right side -->
+                <div class="flex items-center space-x-4">
+                    <!-- Search Icon -->
+                    <div class="relative cursor-pointer" onclick="openSearchModal()" title="Search Products">
+                        <i class="fas fa-search text-xl text-gray-700 hover:text-blue-600 transition-colors"></i>
+                    </div>
+
+                    <div class="relative cursor-pointer" onclick="goToCart()">
+                        <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+                        <span class="cart-badge" id="cart-count">0</span>
+                    </div>
+                    <!-- Profile Menu - Only show when logged in -->
+                    <div id="profile-menu-container" class="relative hidden">
+                        <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                            onclick="toggleProfileMenu()">
+                            <i class="fas fa-user-circle text-2xl"></i>
+                            <span class="hidden md:block">Profile</span>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </button>
+                        <div id="profile-menu" class="hidden w-48 bg-white rounded-lg py-2">
+                            <a href="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i> My Profile
+                            </a>
+                            <a href="/profile/orders" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-shopping-bag mr-2"></i> My Orders
+                            </a>
+                            <a href="/profile/edit" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-edit mr-2"></i> Edit Profile
+                            </a>
+                            <hr class="my-2">
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-red-600 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Login/Logout Button - Desktop -->
+                    <button id="auth-button-desktop" class="btn-primary hidden md:block" onclick="handleAuth()">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </button>
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Dropdown Menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-4">
+                <a href="/homepage" class="block text-gray-700 hover:text-blue-600 transition-colors">Home</a>
+                <a href="categories/view"
+                    class="block text-gray-700 hover:text-blue-600 transition-colors">Categories</a>
+                <a href="products/view" class="block text-gray-700 hover:text-blue-600 transition-colors">Products</a>
+
+                <!-- Mobile Profile Menu - Only show when logged in -->
+                <div id="mobile-profile-menu" class="hidden space-y-2">
+                    <a href="/profile" class="block text-gray-700 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-user mr-2"></i> My Profile
+                    </a>
+                    <a href="/profile/orders" class="block text-gray-700 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-shopping-bag mr-2"></i> My Orders
+                    </a>
+                    <a href="/profile/edit" class="block text-gray-700 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-edit mr-2"></i> Edit Profile
+                    </a>
+                </div>
+
+                <button id="auth-button-mobile" class="btn-primary w-full" onclick="handleAuth()">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="hero-section text-center slide-up">
+                <h1 class="text-6xl font-bold gradient-text mb-6" Quality COnstruction Materials from Authorised
+                    Sellers></h1>
+                <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">All Construction Materials are Available.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                    <button class="btn-primary text-lg px-8 py-4" onclick="window.location.href='products/view'">
+                        <i class="fas fa-search mr-2"></i>Explore Products
+                    </button>
+                    <!-- Personal Assistant Activation -->
+                    <button class="btn-secondary text-lg px-8 py-4" onclick="enableAssistantMode()">
+                        <i class="fas fa-microphone mr-2"></i>Personal Assistant
+                    </button>
+                    <button class="btn-secondary text-lg px-8 py-4" style="background: var(--dark-gradient);"
+                        onclick="checkAuth()">
+                        <i class="fas fa-user-tie mr-2"></i>Supplier Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center text-yellow-400 mb-16 slide-up">Why Choose BuildPro?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature-card text-center slide-up">
+                    <div class="icon-container blue">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">One Day Delivery</h3>
+                    <p class="text-gray-600 text-lg">Delivering Quality Construction Materials </p>
+                </div>
+
+                <div class="feature-card text-center slide-up">
+                    <div class="icon-container green">
+                        <i class="fas fa-fire"></i>
+                        <i class="fas fa-fire" style="position: absolute; font-size: 1.2em; top: 12px; left: 12px;"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">Hot Selling Item</h3>
+                    <p class="text-gray-600 text-lg">Available</p>
+                </div>
+
+                <div class="feature-card text-center slide-up">
+                    <div class="icon-container pink">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">Delivery Selection</h3>
+                    <p class="text-gray-600 text-lg">Available</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Categories -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center text-yellow-400 mb-16 slide-up">Popular Categories</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Cement -->
+
+                <div class="feature-card text-center cursor-pointer slide-up"
+                    onclick="window.location.href='categories/view'">
+                    <div class="icon-container yellow">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <h3 class="font-bold text-lg gradient-text">Cement</h3>
+                </div>
+
+                <!-- tiles -->
+                <div class="feature-card text-center cursor-pointer slide-up"
+                    onclick="window.location.href='categories/view'">
+                    <div class="icon-container yellow">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h3 class="font-bold text-lg gradient-text">Tiles</h3>
+                </div>
+
+                <!-- Iron -->
+                <div class="feature-card text-center cursor-pointer slide-up"
+                    onclick="window.location.href='categories/view'">
+                    <div class="icon-container green">
+                        <i class="fas fa-bolt"></i> <!-- shrimp icon, can add special styling for tiger prawn -->
+                    </div>
+                    <h3 class="font-bold text-lg gradient-text">Iron</h3>
+                </div>
+
+                <!-- Dry Fishes -->
+                <div class="feature-card text-center cursor-pointer slide-up"
+                    onclick="window.location.href='categories/view'">
+                    <div class="icon-container pink">
+                        <i class="fas fa-tools"></i> <!-- closest dry fish or food icon -->
+                    </div>
+                    <h3 class="font-bold text-lg gradient-text">Pipes and Electronics</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById("mobile-menu");
+            menu.classList.toggle("hidden");
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById("profile-menu");
+            menu.classList.toggle("hidden");
+        }
+        function checkAuth() {
+            window.location.href = 'login';
+        }
+
+        function handleAuth() {
+            const userId = localStorage.getItem('currentUserId');
+            if (userId) {
+                logout();
+            } else {
+                window.location.href = '/login';
+            }
+        }
+
+        function updateAuthButtons() {
+            const userId = localStorage.getItem('currentUserId');
+            const authButtonDesktop = document.getElementById('auth-button-desktop');
+            const authButtonMobile = document.getElementById('auth-button-mobile');
+            const profileMenuContainer = document.getElementById('profile-menu-container');
+            const mobileProfileMenu = document.getElementById('mobile-profile-menu');
+
+            if (userId) {
+                // User is logged in - show logout button and profile menu
+                authButtonDesktop.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i>Logout';
+                authButtonMobile.innerHTML = '<i class="fas fa-sign-out-alt mr-2"></i>Logout';
+                profileMenuContainer.classList.remove('hidden');
+                mobileProfileMenu.classList.remove('hidden');
+            } else {
+                // User is not logged in - show login button and hide profile menu
+                authButtonDesktop.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Login';
+                authButtonMobile.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Login';
+                profileMenuContainer.classList.add('hidden');
+                mobileProfileMenu.classList.add('hidden');
+            }
+        }
+        function logout() {
+            // Clear local storage
+            localStorage.clear();
+
+            // Update UI immediately (if on homepage)
+            if (typeof updateAuthButtons === 'function') updateAuthButtons();
+            if (typeof updateCartCount === 'function') updateCartCount();
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function updateCartCount() {
+            const userId = localStorage.getItem('currentUserId');
+            if (!userId) {
+                document.getElementById('cart-count').textContent = '0';
+                return;
+            }
+
+            fetch(`/cart?userId=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const count = data.items ? data.items.length : 0;
+                    document.getElementById('cart-count').textContent = count;
+                })
+                .catch(err => {
+                    console.error('Error fetching cart count:', err);
+                    document.getElementById('cart-count').textContent = '0';
+                });
+        }
+
+        function goToCart() {
+            const rawId = localStorage.getItem("currentUserId");
+            const userId = (rawId && rawId !== 'undefined' && rawId !== 'null' && rawId.trim() !== '') ? rawId : null;
+            if (!userId) {
+                alert("Please login first to view your cart!");
+                window.location.href = "/login";
+                return;
+            }
+            window.location.href = `/cart/view?userId=${userId}`;
+        }
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('profile-menu');
+            const button = event.target.closest('button');
+            if (!button || !button.onclick || button.onclick.toString().indexOf('toggleProfileMenu') === -1) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        updateCartCount();
+        updateAuthButtons();
+
+        // Search functionality
+        function openSearchModal() {
+            document.getElementById('searchModal').classList.remove('hidden');
+            document.getElementById('searchInput').focus();
+        }
+
+        function closeSearchModal() {
+            document.getElementById('searchModal').classList.add('hidden');
+            document.getElementById('searchInput').value = '';
+        }
+
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (query.length < 2) {
+                alert('Please enter at least 2 characters to search');
+                return;
+            }
+
+            // Redirect to search results page
+            window.location.href = `/products/search-results?q=${encodeURIComponent(query)}`;
+        }
+
+        // Close search modal with ESC key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('searchModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    closeSearchModal();
+                }
+            }
+        });
+    </script>
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b">
+                    <h2 class="text-xl font-semibold text-gray-800">Search Products</h2>
+                    <button onclick="closeSearchModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Search Input -->
+                <div class="p-6">
+                    <form onsubmit="performSearch(); return false;">
+                        <div class="relative">
+                            <input type="text" id="searchInput"
+                                placeholder="Search for products, brands, or categories..."
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
+                            <button type="submit"
+                                class="absolute right-2 top-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                Search
+                            </button>
+                        </div>
+                    </form>
+                    <p class="text-gray-500 text-sm mt-3 text-center">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Enter at least 2 characters and press Search or Enter
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Chat Widget -->
+    <div th:replace="fragments/chat :: chatWidget"></div>
+</body>
+
+</html>

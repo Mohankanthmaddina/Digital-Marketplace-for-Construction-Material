@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .payment-method {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method.selected {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/homepage'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro</span>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="relative cursor-pointer" onclick="window.location.href=`/cart/view?userId=${userId}`">
+                        <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+                        <span class="cart-badge" id="cart-count">0</span>
+                    </div>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        onclick="logout()">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto my-12 px-4">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8">Payment</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h3 class="text-xl font-semibold mb-4">Payment Method</h3>
+
+                    <div class="space-y-4">
+                        <!-- Payment Method -->
+                        <div class="payment-method" onclick="selectPayment('cod')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <input type="radio" name="payment" id="cod" class="mr-3" checked>
+                                    <label for="cod" class="font-semibold flex items-center">
+                                        <i class="fas fa-money-bill-wave text-green-600 mr-2"></i>
+                                        Cash on Delivery
+                                    </label>
+                                </div>
+                                <span class="text-sm text-gray-500">Pay on Delivery</span>
+                            </div>
+                            <div class="mt-2 text-sm text-gray-600">
+                                <p>Pay when your order is delivered at your doorstep</p>
+                            </div>
+                        </div>
+
+                        <!-- Online Payment (Razorpay) -->
+                        <div class="payment-method" onclick="selectPayment('online')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <input type="radio" name="payment" id="online" class="mr-3">
+                                    <label for="online" class="font-semibold flex items-center">
+                                        <i class="fas fa-credit-card text-blue-600 mr-2"></i>
+                                        Online Payment (Razorpay)
+                                    </label>
+                                </div>
+                                <span class="text-sm text-gray-500">Pay securely</span>
+                            </div>
+                            <div class="mt-2 text-sm text-gray-600">
+                                <p>Pay via UPI, Credit/Debit Cards, or Netbanking</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Details for Manual Payment -->
+                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 class="text-lg font-semibold text-blue-800 mb-3">
+                            <i class="fas fa-university mr-2"></i>Account Details for Manual Payment
+                        </h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-blue-700 font-medium">Account Holder:</span>
+                                <span id="account-holder" class="text-blue-900">MADDINA MOHANKANTH</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-blue-700 font-medium">Account Number:</span>
+                                <span id="account-number" class="text-blue-900">058112010000848</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-blue-700 font-medium">Bank Name:</span>
+                                <span id="bank-name" class="text-blue-900">Union Bank of India</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-blue-700 font-medium">IFSC Code:</span>
+                                <span id="ifsc-code" class="text-blue-900">UBIN0805815</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-blue-700 font-medium">UPI ID:</span>
+                                <span id="upi-id" class="text-blue-900">mohankanth1784@oksbi</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-blue-700 font-medium">Phone Number:</span>
+                                <span id="phone-number" class="text-blue-900">+91-8019566265</span>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                            <p class="text-yellow-800 text-xs">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                <strong>Note:</strong> You can also pay via UPI using the above UPI ID or bank transfer
+                                using the account details.
+                                After payment, your order will be confirmed automatically.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-xl font-semibold mb-4">Delivery Address</h3>
+                    <div class="text-gray-700" th:if="${selectedAddress != null}">
+                        <p class="font-semibold" th:text="${selectedAddress.name}">John Doe</p>
+                        <p th:text="${selectedAddress.addressLine1}">123 Main Street</p>
+                        <p th:text="${selectedAddress.addressLine2}" th:if="${selectedAddress.addressLine2 != null}">Apt
+                            4B</p>
+                        <p
+                            th:text="${selectedAddress.city + ', ' + selectedAddress.state + ' - ' + selectedAddress.postalCode}">
+                            Mumbai, Maharashtra - 400001</p>
+                        <p th:text="'Phone: ' + ${selectedAddress.phone}">Phone: +91 9876543210</p>
+                        <a th:href="@{/checkout(userId=${userId})}" class="text-blue-600 hover:underline text-sm">Change
+                            Address</a>
+                    </div>
+                    <div class="text-gray-500" th:if="${selectedAddress == null}">
+                        <p>No address selected</p>
+                        <a th:href="@{/checkout(userId=${userId})}" class="text-blue-600 hover:underline text-sm">Select
+                            Address</a>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-xl font-semibold mb-4">Order Summary</h3>
+
+                    <!-- Cart Items -->
+                    <div class="space-y-3 mb-4" th:if="${cart != null and !cart.cartItems.empty}">
+                        <div th:each="item : ${cart.cartItems}" class="flex justify-between items-center py-2 border-b">
+                            <div class="flex items-center space-x-3">
+                                <img th:src="${item.product.imageUrl}" alt="Product"
+                                    class="w-12 h-12 object-cover rounded">
+                                <div>
+                                    <p class="font-medium" th:text="${item.product.name}"></p>
+                                    <p class="text-sm text-gray-500" th:text="'Qty: ' + ${item.quantity}"></p>
+                                </div>
+                            </div>
+                            <span class="font-semibold"
+                                th:text="'₹' + ${#numbers.formatDecimal(item.quantity * item.product.price, 1, 2)}"></span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between">
+                            <span>Items Total</span>
+                            <span id="payment-subtotal"
+                                th:text="'₹' + ${#numbers.formatDecimal(subtotal, 1, 2)}">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Delivery</span>
+                            <span id="payment-delivery"
+                                th:text="'₹' + ${#numbers.formatDecimal(deliveryCharge, 1, 2)}">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between text-green-600" th:if="${discount > 0}">
+                            <span>Cluster Discount (15%)</span>
+                            <span id="payment-discount"
+                                th:text="'-₹' + ${#numbers.formatDecimal(discount, 1, 2)}">-₹0.00</span>
+                        </div>
+                        <div class="border-t pt-2">
+                            <div class="flex justify-between font-semibold text-lg">
+                                <span>Total</span>
+                                <span id="payment-total"
+                                    th:text="'₹' + ${#numbers.formatDecimal(total, 1, 2)}">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4" th:if="${discount > 0}">
+                        <div class="flex items-center">
+                            <i class="fas fa-gift text-green-600 mr-2"></i>
+                            <span class="font-semibold">Cluster Benefit Applied!</span>
+                        </div>
+                        <p class="text-sm text-green-700 mt-1">You saved 15% on delivery charges through our cluster
+                            discount system.</p>
+                    </div>
+
+                    <button id="pay-button"
+                        class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                        onclick="processPayment()">
+                        Complete Payment
+                    </button>
+
+                    <!-- Receiver Account Details -->
+                    <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                        <h4 class="font-semibold mb-3 text-gray-800">Payment Details</h4>
+                        <div id="receiver-details" class="text-sm text-gray-600">
+                            <p><strong>Account Holder:</strong> <span id="account-holder">Loading...</span></p>
+                            <p><strong>Account Number:</strong> <span id="account-number">Loading...</span></p>
+                            <p><strong>Bank:</strong> <span id="bank-name">Loading...</span></p>
+                            <p><strong>IFSC Code:</strong> <span id="ifsc-code">Loading...</span></p>
+                            <p><strong>UPI ID:</strong> <span id="upi-id">Loading...</span></p>
+                            <p><strong>Phone:</strong> <span id="phone-number">Loading...</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        let selectedPayment = 'cod'; // Default to COD
+        const userId = /*[[${ userId }]]*/ null;
+        const addressId = /*[[${ addressId }]]*/ null;
+
+        function selectPayment(method) {
+            selectedPayment = method;
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            document.querySelector(`#${method}`).checked = true;
+        }
+
+        function processPayment() {
+            if (!userId) {
+                alert('User not found. Please login again.');
+                window.location.href = '/login';
+                return;
+            }
+            if (!addressId) {
+                alert('Address not selected. Please go back and choose an address.');
+                window.location.href = `/checkout?userId=${userId}`;
+                return;
+            }
+
+            const payBtn = document.getElementById('pay-button');
+            const originalText = payBtn.innerText;
+            payBtn.innerText = 'Processing...';
+            payBtn.disabled = true;
+
+            if (selectedPayment === 'cod') {
+                // Directly place order and redirect to success
+                window.location.href = `/payment/direct-place?userId=${userId}&addressId=${addressId}`;
+            } else if (selectedPayment === 'online') {
+                // Initiating Razorpay
+                fetch('/payment/create-razorpay-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ userId: userId })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            var options = {
+                                "key": data.keyId,
+                                "amount": data.amount * 100, // amount in paise
+                                "currency": data.currency,
+                                "name": "BuildPro",
+                                "description": "Order Payment",
+                                "order_id": data.razorpayOrderId,
+                                "handler": function (response) {
+                                    // Payment succeeded!
+                                    const formData = new URLSearchParams();
+                                    formData.append('userId', userId);
+                                    formData.append('addressId', addressId);
+                                    formData.append('paymentMethod', 'online');
+                                    formData.append('razorpayPaymentId', response.razorpay_payment_id);
+                                    formData.append('razorpayOrderId', response.razorpay_order_id);
+                                    formData.append('razorpaySignature', response.razorpay_signature);
+
+                                    fetch('/payment/process', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                        body: formData
+                                    })
+                                        .then(res2 => res2.json())
+                                        .then(data2 => {
+                                            if (data2.success) {
+                                                window.location.href = data2.redirectUrl || `/payment/success?orderId=${data2.orderId}`;
+                                            } else {
+                                                alert("Payment processing failed: " + data2.message);
+                                                payBtn.innerText = originalText;
+                                                payBtn.disabled = false;
+                                            }
+                                        })
+                                        .catch(err => {
+                                            alert("Error validating payment details.");
+                                            payBtn.innerText = originalText;
+                                            payBtn.disabled = false;
+                                        });
+                                },
+                                "theme": {
+                                    "color": "#2563eb"
+                                }
+                            };
+                            var rzp1 = new Razorpay(options);
+                            rzp1.on('payment.failed', function (response) {
+                                alert("Payment failed: " + response.error.description);
+                                payBtn.innerText = originalText;
+                                payBtn.disabled = false;
+                            });
+                            rzp1.open();
+                        } else {
+                            alert(data.message);
+                            payBtn.innerText = originalText;
+                            payBtn.disabled = false;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error creating order:', err);
+                        alert('Error initiating payment gateway');
+                        payBtn.innerText = originalText;
+                        payBtn.disabled = false;
+                    });
+            }
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        function logout() {
+            // Clear local storage
+            localStorage.clear();
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function loadReceiverDetails() {
+            fetch('/payment/receiver-details')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('account-holder').textContent = data.accountHolderName;
+                    document.getElementById('account-number').textContent = data.accountNumber;
+                    document.getElementById('bank-name').textContent = data.bankName;
+                    document.getElementById('ifsc-code').textContent = data.ifscCode;
+                    document.getElementById('upi-id').textContent = data.upiId;
+                    document.getElementById('phone-number').textContent = data.phoneNumber;
+                })
+                .catch(err => {
+                    console.error('Error loading receiver details:', err);
+                    document.getElementById('receiver-details').innerHTML = '<p class="text-red-500">Error loading payment details</p>';
+                });
+        }
+
+        function showPaymentGatewayModal(paymentData) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-credit-card text-green-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">Payment Gateway</h3>
+                        <p class="text-gray-600 mb-6">Redirecting to ${selectedPayment} payment gateway...</p>
+                        
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                            <p class="text-sm text-blue-800">
+                                <strong>Order ID:</strong> ${paymentData.orderNumber}<br>
+                                <strong>Amount:</strong> ₹${paymentData.amount}<br>
+                                <strong>Payment ID:</strong> ${paymentData.paymentId}
+                            </p>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <button onclick="redirectToPaymentApp('${selectedPayment}', ${paymentData.amount})" 
+                                    class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                                <i class="fas fa-external-link-alt mr-2"></i> Open ${selectedPayment.toUpperCase()}
+                            </button>
+                            
+                            <div class="flex space-x-3">
+                                <button onclick="simulatePaymentSuccess('${paymentData.orderId}')" 
+                                        class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-check mr-2"></i> Payment Done
+                                </button>
+                                <button onclick="simulatePaymentFailure()" 
+                                        class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
+                                    <i class="fas fa-times mr-2"></i> Payment Failed
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button onclick="closePaymentModal()" 
+                                class="mt-4 text-gray-500 hover:text-gray-700">
+                            Cancel Payment
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+        }
+
+        function redirectToPaymentApp(paymentMethod, amount) {
+            // Get receiver account details
+            fetch('/payment/receiver-details')
+                .then(response => response.json())
+                .then(data => {
+                    let paymentUrl = '';
+
+                    if (paymentMethod === 'phonepe') {
+                        // PhonePe UPI URL
+                        paymentUrl = `phonepe://pay?pa=${data.upiId}&pn=${data.accountHolderName}&am=${amount}&cu=INR&tr=ORD${Date.now()}`;
+                    } else if (paymentMethod === 'gpay') {
+                        // Google Pay UPI URL
+                        paymentUrl = `tez://upi/pay?pa=${data.upiId}&pn=${data.accountHolderName}&am=${amount}&cu=INR&tr=ORD${Date.now()}`;
+                    } else if (paymentMethod === 'online') {
+                        // Generic UPI URL (works with most UPI apps)
+                        paymentUrl = `upi://pay?pa=${data.upiId}&pn=${data.accountHolderName}&am=${amount}&cu=INR&tr=ORD${Date.now()}`;
+                    }
+
+                    if (paymentUrl) {
+                        // Try to open the payment app
+                        window.location.href = paymentUrl;
+
+                        // Show fallback message
+                        setTimeout(() => {
+                            alert(`Please open ${paymentMethod.toUpperCase()} app manually and pay ₹${amount} to UPI ID: ${data.upiId}`);
+                        }, 2000);
+                    } else {
+                        alert('Payment method not supported');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting payment details:', error);
+                    alert('Error loading payment details. Please try again.');
+                });
+        }
+
+        function simulatePaymentSuccess(orderId) {
+            closePaymentModal();
+            window.location.href = `/payment/success?orderId=${orderId}`;
+        }
+
+        function simulatePaymentFailure() {
+            closePaymentModal();
+            showNotification('Payment was cancelled or failed', 'error');
+        }
+
+        function closePaymentModal() {
+            const modal = document.querySelector('.fixed.inset-0');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Initialize
+        updateCartCount();
+        loadReceiverDetails();
+    </script>
+</body>
+
+</html>

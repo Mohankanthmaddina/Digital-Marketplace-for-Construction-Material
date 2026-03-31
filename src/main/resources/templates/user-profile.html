@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/homepage'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro</span>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/homepage" class="text-gray-700 hover:text-blue-600 transition-colors">Home</a>
+                    <a href="/categories/view"
+                        class="text-gray-700 hover:text-blue-600 transition-colors">Categories</a>
+                    <a href="/products/view" class="text-gray-700 hover:text-blue-600 transition-colors">Products</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="relative cursor-pointer" onclick="goToCart()">
+                        <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+                        <span class="cart-badge" id="cart-count">0</span>
+                    </div>
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                            onclick="toggleProfileMenu()">
+                            <i class="fas fa-user-circle text-2xl"></i>
+                            <span class="hidden md:block" th:if="${user != null}" th:text="${user.name}">User</span>
+                            <span class="hidden md:block" th:if="${user == null}">Account</span>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </button>
+                        <div id="profile-menu"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <a href="#" onclick="openMyProfile()"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i> My Profile
+                            </a>
+                            <a href="#" onclick="openMyOrders()"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-shopping-bag mr-2"></i> My Orders
+                            </a>
+                            <a href="#" onclick="openEditProfile()"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-edit mr-2"></i> Edit Profile
+                            </a>
+                            <hr class="my-2">
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-red-600 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto my-12 px-4">
+        <!-- Success Message -->
+        <div th:if="${param.success}"
+            class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span th:text="${param.success}"></span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Profile Information -->
+            <div class="lg:col-span-1" th:if="${user != null}">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="text-center mb-6">
+                        <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-user text-blue-600 text-3xl"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold" th:if="${user != null}" th:text="${user.name}">User Name</h2>
+                        <h2 class="text-xl font-semibold" th:if="${user == null}">User</h2>
+                        <p class="text-gray-600" th:if="${user != null}" th:text="${user.email}">user@example.com</p>
+                        <p class="text-gray-600" th:if="${user == null}">user@example.com</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-envelope text-gray-400 mr-3"></i>
+                            <span th:if="${user != null}" th:text="${user.email}">user@example.com</span>
+                            <span th:if="${user == null}">user@example.com</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-phone text-gray-400 mr-3"></i>
+                            <span>Provided during checkout</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar text-gray-400 mr-3"></i>
+                            <span th:if="${user != null}"
+                                th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</span>
+                            <span th:if="${user == null}">N/A</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt text-gray-400 mr-3"></i>
+                            <span th:if="${user != null}"
+                                th:class="${user.isVerified ? 'text-green-600' : 'text-red-600'}"
+                                th:text="${user.isVerified ? 'Verified' : 'Not Verified'}">Verified</span>
+                            <span th:if="${user == null}" class="text-gray-600">Unknown</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <a href="#" onclick="openEditProfile()"
+                            class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center block">
+                            <i class="fas fa-edit mr-2"></i> Edit Profile
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-1" th:if="${user == null}">
+                <div class="bg-white rounded-lg shadow p-6 text-center">
+                    <i class="fas fa-user text-3xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-600">User details not available.</p>
+                    <p class="text-sm text-gray-500">Open this page from your dashboard so we can identify your account.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="lg:col-span-2">
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" th:if="${user != null}">
+                    <div class="bg-white rounded-lg shadow p-6 text-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-shopping-bag text-blue-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800" th:text="${orderCount}">0</h3>
+                        <p class="text-gray-600">Total Orders</p>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow p-6 text-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800"
+                            th:text="${#lists.size(orders.?[status.name() == 'DELIVERED'])}">0</h3>
+                        <p class="text-gray-600">Delivered</p>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow p-6 text-center">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800"
+                            th:text="${#lists.size(orders.?[status.name() == 'PENDING' or status.name() == 'CONFIRMED'])}">
+                            0</h3>
+                        <p class="text-gray-600">In Progress</p>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="bg-white rounded-lg shadow" th:if="${user != null}">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-semibold">Recent Orders</h3>
+                            <a href="#" onclick="openMyOrders()" class="text-blue-600 hover:underline">View All</a>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <div th:if="${orders.empty}" class="text-center py-8 text-gray-500">
+                            <i class="fas fa-shopping-bag text-4xl mb-4"></i>
+                            <p>No orders yet</p>
+                            <a href="/products/view" class="text-blue-600 hover:underline mt-2 inline-block">Start
+                                Shopping</a>
+                        </div>
+
+                        <div th:if="${!orders.empty}" class="space-y-4">
+                            <div th:each="order,orderStat : ${orders}" th:if="${orderStat.index < 3}"
+                                class="border rounded-lg p-4 hover:bg-gray-50">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-semibold" th:text="${order.orderNumber}">ORD-123456</h4>
+                                        <p class="text-sm text-gray-600"
+                                            th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">
+                                            01/01/2024 12:00</p>
+                                        <p class="text-sm text-gray-600"
+                                            th:text="${order.orderItems.size()} + ' items'">2 items</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-semibold text-green-600"
+                                            th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">₹1,000.00
+                                        </p>
+                                        <span th:class="${order.status.name() == 'DELIVERED' ? 'bg-green-100 text-green-800' : 
+                                                      order.status.name() == 'CANCELLED' ? 'bg-red-100 text-red-800' : 
+                                                      'bg-yellow-100 text-yellow-800'}"
+                                            class="px-2 py-1 rounded-full text-xs font-semibold"
+                                            th:text="${order.status}">Confirmed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Auto-resolve profile if opened without user context
+        const isUserPresent = [[${ user != null}]];
+        if (!isUserPresent) {
+            const id = localStorage.getItem('currentUserId');
+            if (id) {
+                window.location.replace('/profile?userId=' + id);
+            }
+        }
+
+        function currentUserId() {
+            return localStorage.getItem('currentUserId');
+        }
+
+        function openMyProfile() {
+            const id = currentUserId();
+            if (!id) { showInfo('User not identified. Please access from dashboard.', 'Alert'); return; }
+            window.location.href = '/profile?userId=' + id;
+        }
+
+        function openMyOrders() {
+            const id = currentUserId();
+            if (!id) { showInfo('User not identified. Please access from dashboard.', 'Alert'); return; }
+            window.location.href = '/profile/orders?userId=' + id;
+        }
+
+        function openEditProfile() {
+            const id = currentUserId();
+            if (!id) { showInfo('User not identified. Please access from dashboard.', 'Alert'); return; }
+            window.location.href = '/profile/edit?userId=' + id;
+        }
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function goToCart() {
+            const userId = localStorage.getItem("currentUserId");
+            if (!userId) {
+                showInfo("Please login first to view your cart!", "Alert");
+                window.location.href = "/login";
+                return;
+            }
+            window.location.href = `/cart/view?userId=${userId}`;
+        }
+
+        function logout() {
+            // Clear local storage
+            localStorage.clear();
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('profile-menu');
+            const button = event.target.closest('button');
+            if (!button || !button.onclick || button.onclick.toString().indexOf('toggleProfileMenu') === -1) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Initialize
+        updateCartCount();
+    </script>
+
+</body>
+
+</html>

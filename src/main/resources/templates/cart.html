@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+
+    <!--  Navigation bar -->
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/'">
+                <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-hard-hat text-white text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-blue-600">BuildPro </span>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="relative cursor-pointer">
+                    <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+                    <span class="cart-badge" id="cart-count">0</span>
+                </div>
+
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    onclick="logout()">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Cart Section  handling-->
+    <div class="max-w-6xl mx-auto my-12 px-4">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8">Shopping Cart</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div id="cart-items">
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+                            <p>Your cart is empty</p>
+                            <a href="/products/view" class="text-blue-600 hover:underline mt-2 inline-block">Continue
+                                Shopping</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--   Order Summary Regarding to the Subtotal of products, delivery Cost, Discount on 15%  Delivery Charges -->
+            <div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-xl font-semibold mb-4">Order Summary</h3>
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between">
+                            <span>Subtotal</span>
+                            <span id="cart-subtotal">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Delivery Charge</span>
+                            <span id="cart-delivery">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between text-green-600" id="discount-container" style="display: none;">
+                            <span>Cluster Discount (5%)</span>
+                            <span id="cart-discount">-₹0.00</span>
+                        </div>
+                        <div class="border-t pt-3">
+                            <div class="flex justify-between font-semibold text-lg">
+                                <span>Total</span>
+                                <span id="cart-total">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4" id="cluster-info"
+                        style="display: none;">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-blue-600 mr-2"></i>
+                            <span class="font-semibold">Cluster Benefit!</span>
+                        </div>
+                        <p class="text-sm text-blue-700 mt-1">You qualify for 15% delivery discount due to nearby
+                            orders.</p>
+                    </div>
+
+                    <button
+                        class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                        onclick="proceedToCheckout()">
+                        Proceed to Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "/cart";
+
+        // ✅ Robust userId helper — rejects null, empty, and the string "undefined"
+        function getValidUserId() {
+            const id = localStorage.getItem('currentUserId');
+            if (!id || id === 'undefined' || id === 'null' || id.trim() === '') return null;
+            return id;
+        }
+
+        function getAuthHeader() {
+            const token = localStorage.getItem('authToken');
+            return token ? { 'Authorization': 'Bearer ' + token } : {};
+        }
+
+        const userId = getValidUserId();
+
+        async function loadCartItems() {
+            const userId = getValidUserId();
+            if (!userId) {
+                alert("Please login to see your cart");
+                window.location.href = "/login";
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}?userId=${userId}`, {
+                    headers: getAuthHeader()
+                });
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        // Cart doesn't exist, show empty state
+                        showEmptyCart();
+                        return;
+                    }
+                    throw new Error("Failed to fetch cart");
+                }
+                const cart = await res.json();
+
+                const container = document.getElementById('cart-items');
+
+                if (!cart.items || cart.items.length === 0) {
+                    showEmptyCart();
+                    return;
+                }
+
+                //  Rendering cart items (using DTO fields)
+                container.innerHTML = cart.items.map(item => `
+                <div class="flex items-center space-x-4 py-4 border-b">
+                    <img src="${item.imageUrl || 'https://via.placeholder.com/80x80'}" alt="${item.productName}" class="w-20 h-20 object-cover rounded">
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${item.productName}</h4>
+                        <p class="text-blue-600 font-bold">₹${item.price}</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="w-8 h-8 rounded-full border hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center" 
+                                onclick="updateQuantity(${item.itemId}, ${item.quantity - 1})" 
+                                title="Decrease quantity">
+                            <i class="fas fa-minus text-sm"></i>
+                        </button>
+                        <span class="px-3 py-1 bg-gray-100 rounded min-w-[2rem] text-center">${item.quantity}</span>
+                        <button class="w-8 h-8 rounded-full border hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center" 
+                                onclick="updateQuantity(${item.itemId}, ${item.quantity + 1})" 
+                                title="Increase quantity">
+                            <i class="fas fa-plus text-sm"></i>
+                        </button>
+                    </div>
+                    <span class="font-semibold">₹${item.subtotal.toFixed(2)}</span>
+                    <button class="text-red-600 hover:text-red-800 p-2" onclick="removeFromCart(${item.itemId})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+
+                // ✅ Update totals
+                const subtotal = cart.items.reduce((sum, i) => sum + i.subtotal, 0);
+                updateCartTotals(subtotal);
+                document.getElementById('cart-count').textContent = cart.items.length;
+
+            } catch (err) {
+                console.error(err);
+                showEmptyCart();
+                alert("Failed to load cart items: " + err.message);
+            }
+        }
+
+        function showEmptyCart() {
+            const container = document.getElementById('cart-items');
+            container.innerHTML = `
+            <div class="text-center py-12 text-gray-500">
+                <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+                <p>Your cart is empty</p>
+                <a href="/products/view" class="text-blue-600 hover:underline mt-2 inline-block">Continue Shopping</a>
+            </div>
+        `;
+            updateCartTotals(0);
+            document.getElementById('cart-count').textContent = 0;
+        }
+
+
+        let isUpdating = false;
+
+        async function updateQuantity(itemId, newQuantity) {
+            const userId = getValidUserId();
+            if (newQuantity < 1 || isUpdating) return;
+
+            isUpdating = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/update?userId=${userId}&itemId=${itemId}&quantity=${newQuantity}`, {
+                    method: 'PUT',
+                    headers: getAuthHeader()
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update quantity');
+                }
+
+                // Reload cart items to reflect changes
+                await loadCartItems();
+            } catch (error) {
+                console.error('Error updating quantity:', error);
+                alert('Failed to update quantity. Please try again.');
+            } finally {
+                isUpdating = false;
+            }
+        }
+
+        async function removeFromCart(itemId) {
+            const userId = getValidUserId();
+            if (!confirm('Are you sure you want to remove this item from your cart?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/remove?userId=${userId}&itemId=${itemId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeader()
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to remove item');
+                }
+
+                // Reload cart items to reflect changes
+                await loadCartItems();
+            } catch (error) {
+                console.error('Error removing item:', error);
+                alert('Failed to remove item. Please try again.');
+            }
+        }
+
+        function updateCartTotals(subtotal) {
+            const delivery = subtotal > 0 ? subtotal * 0.05 : 0;
+            const discount = subtotal > 1000 ? delivery * 0.15 : 0;
+            const total = subtotal + delivery - discount;
+
+            document.getElementById('cart-subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('cart-delivery').textContent = `₹${delivery.toFixed(2)}`;
+            document.getElementById('cart-total').textContent = `₹${total.toFixed(2)}`;
+
+            if (discount > 0) {
+                document.getElementById('discount-container').style.display = 'flex';
+                document.getElementById('cart-discount').textContent = `-₹${discount.toFixed(2)}`;
+                document.getElementById('cluster-info').style.display = 'block';
+            } else {
+                document.getElementById('discount-container').style.display = 'none';
+                document.getElementById('cluster-info').style.display = 'none';
+            }
+        }
+
+        function proceedToCheckout() {
+            const userId = getValidUserId();
+            if (!userId) { alert("Please login first"); window.location.href = '/login'; return; }
+            window.location.href = `/cart/checkout?userId=${userId}`;
+        }
+
+        function logout() {
+            // Clear local storage
+            localStorage.clear();
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Load cart on page load
+        loadCartItems();
+    </script>
+    <!-- Chat Widget -->
+    <div th:replace="fragments/chat :: chatWidget"></div>
+</body>
+
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Alerts Test - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+</head>
+<body class="min-h-screen bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Login Alerts Test</h1>
+        
+        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>
+                <div>
+                    <h3 class="font-semibold">Professional Login Alerts</h3>
+                    <p class="text-sm mt-1">Test all login-related alert scenarios with beautiful professional alerts.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Login Error Scenarios -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 text-red-600">Login Error Scenarios</h2>
+                <div class="space-y-3">
+                    <button onclick="testInvalidCredentials()" 
+                            class="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                        Invalid Email/Password
+                    </button>
+                    <button onclick="testRoleMismatch()" 
+                            class="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                        Role Mismatch
+                    </button>
+                    <button onclick="testNetworkError()" 
+                            class="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                        Network Error
+                    </button>
+                    <button onclick="testUnexpectedError()" 
+                            class="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                        Unexpected Error
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Account Status Scenarios -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 text-yellow-600">Account Status Scenarios</h2>
+                <div class="space-y-3">
+                    <button onclick="testAdminPending()" 
+                            class="w-full bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors">
+                        Admin Account Pending
+                    </button>
+                    <button onclick="testUserPending()" 
+                            class="w-full bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors">
+                        User Account Not Verified
+                    </button>
+                    <button onclick="testEmailNotFound()" 
+                            class="w-full bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors">
+                        Email Not Found
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Success Scenarios -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 text-green-600">Success Scenarios</h2>
+                <div class="space-y-3">
+                    <button onclick="testUserLoginSuccess()" 
+                            class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        User Login Success
+                    </button>
+                    <button onclick="testAdminLoginSuccess()" 
+                            class="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                        Admin Login Success
+                    </button>
+                    <button onclick="testLoadingState()" 
+                            class="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                        Loading State
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Form Validation Scenarios -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 text-purple-600">Form Validation</h2>
+                <div class="space-y-3">
+                    <button onclick="testEmptyFields()" 
+                            class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        Empty Fields
+                    </button>
+                    <button onclick="testInvalidEmail()" 
+                            class="w-full bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
+                        Invalid Email Format
+                    </button>
+                    <button onclick="testPasswordTooShort()" 
+                            class="w-full bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
+                        Password Too Short
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Results -->
+        <div class="mt-8 bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Test Results</h2>
+            <div id="test-results" class="space-y-2">
+                <p class="text-gray-600">Click any button above to test the professional alerts system.</p>
+            </div>
+        </div>
+        
+        <!-- Alert Information -->
+        <div class="mt-8 bg-gray-100 rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Alert System Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">Error Types</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Invalid credentials with clear messaging</li>
+                        <li>• Role mismatch with helpful guidance</li>
+                        <li>• Network errors with retry suggestions</li>
+                        <li>• Account status warnings</li>
+                        <li>• Form validation errors</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">Success Types</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Login success with welcome message</li>
+                        <li>• Loading states during processing</li>
+                        <li>• Smooth transitions and animations</li>
+                        <li>• Auto-redirect after success</li>
+                        <li>• Professional visual design</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test functions for different scenarios
+        function testInvalidCredentials() {
+            showError('Invalid email or password. Please check your credentials and try again.', 'Login Failed');
+            updateTestResults('❌ Invalid credentials alert shown');
+        }
+
+        function testRoleMismatch() {
+            showError('Role mismatch. Please select the correct login type (User or Admin).', 'Role Mismatch');
+            updateTestResults('❌ Role mismatch alert shown');
+        }
+
+        function testNetworkError() {
+            showError('Network error. Please check your connection and try again.', 'Connection Error');
+            updateTestResults('❌ Network error alert shown');
+        }
+
+        function testUnexpectedError() {
+            showError('An unexpected error occurred. Please try again.', 'Login Error');
+            updateTestResults('❌ Unexpected error alert shown');
+        }
+
+        function testAdminPending() {
+            showWarning('Your admin account is awaiting verification by an existing administrator. Please contact support.', 'Admin Account Pending');
+            updateTestResults('⚠️ Admin pending alert shown');
+        }
+
+        function testUserPending() {
+            showWarning('Please verify your email address to activate your account', 'Account Not Verified');
+            updateTestResults('⚠️ User pending alert shown');
+        }
+
+        function testEmailNotFound() {
+            showError('Email not found or not verified', 'Email Error');
+            updateTestResults('❌ Email not found alert shown');
+        }
+
+        function testUserLoginSuccess() {
+            showSuccess('Welcome back, John Doe!', 'Login Successful');
+            updateTestResults('✅ User login success alert shown');
+        }
+
+        function testAdminLoginSuccess() {
+            showSuccess('Welcome back, Admin User!', 'Login Successful');
+            updateTestResults('✅ Admin login success alert shown');
+        }
+
+        function testLoadingState() {
+            const loadingId = showLoadingState('Signing you in...');
+            updateTestResults('⏳ Loading state shown');
+            
+            setTimeout(() => {
+                hideLoadingState(loadingId);
+                showSuccess('Login completed!', 'Success');
+                updateTestResults('✅ Loading state completed');
+            }, 3000);
+        }
+
+        function testEmptyFields() {
+            showValidationError('Please fill in all required fields');
+            updateTestResults('⚠️ Empty fields validation shown');
+        }
+
+        function testInvalidEmail() {
+            showValidationError('Please enter a valid email address');
+            updateTestResults('⚠️ Invalid email validation shown');
+        }
+
+        function testPasswordTooShort() {
+            showValidationError('Password must be at least 8 characters long');
+            updateTestResults('⚠️ Password length validation shown');
+        }
+
+        function updateTestResults(message) {
+            const resultsDiv = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const resultItem = document.createElement('div');
+            resultItem.className = 'flex justify-between items-center p-2 bg-gray-50 rounded';
+            resultItem.innerHTML = `
+                <span>${message}</span>
+                <span class="text-xs text-gray-500">${timestamp}</span>
+            `;
+            resultsDiv.appendChild(resultItem);
+            
+            // Keep only last 10 results
+            const results = resultsDiv.querySelectorAll('div');
+            if (results.length > 10) {
+                results[0].remove();
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showInfo('Login alerts test page loaded. Click any button to test different alert scenarios.', 'Test Page Ready');
+            updateTestResults('📋 Test page initialized');
+        });
+    </script>
+</body>
+</html>

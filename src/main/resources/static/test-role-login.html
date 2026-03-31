@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role-Based Login Test - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+</head>
+<body class="min-h-screen bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Role-Based Login Test</h1>
+        
+        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>
+                <div>
+                    <h3 class="font-semibold">Role-Based Login Functionality Test</h3>
+                    <p class="text-sm mt-1">Test the role-based login system to ensure User and Admin login types work correctly.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Role Selection Test -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 text-blue-600">Role Selection Test</h2>
+                <div class="space-y-4">
+                    <div class="flex border-b">
+                        <button id="test-user-btn" class="flex-1 py-3 px-4 text-center font-semibold border-b-2 border-blue-600 text-blue-600" onclick="testSetLoginType('user', event)">
+                            <i class="fas fa-user mr-2"></i>User Login
+                        </button>
+                        <button id="test-admin-btn" class="flex-1 py-3 px-4 text-center font-semibold text-gray-600" onclick="testSetLoginType('admin', event)">
+                            <i class="fas fa-shield-alt mr-2"></i>Admin Login
+                        </button>
+                    </div>
+                    <div id="test-login-type-indicator" class="mt-2 text-sm text-gray-600 text-center">
+                        <i class="fas fa-info-circle mr-1"></i>Selected: <span class="font-semibold text-blue-600">User Login</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Login Test -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 text-green-600">Login Test</h2>
+                <form id="test-login-form" onsubmit="testHandleLogin(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Email Address</label>
+                        <input type="email" id="test-email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Password</label>
+                        <input type="password" id="test-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                            Test Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Test Results -->
+        <div class="mt-8 bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Test Results</h2>
+            <div id="test-results" class="space-y-2">
+                <p class="text-gray-600">Click any button above to test the role-based login functionality.</p>
+            </div>
+        </div>
+        
+        <!-- Debug Information -->
+        <div class="mt-8 bg-gray-100 rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Debug Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">Current State</h3>
+                    <div id="debug-info" class="text-sm text-gray-600 space-y-1">
+                        <p>Login Type: <span id="debug-login-type">user</span></p>
+                        <p>Professional Alerts: <span id="debug-alerts">Loading...</span></p>
+                        <p>Role Buttons: <span id="debug-buttons">Loading...</span></p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">Test Actions</h3>
+                    <div class="space-y-2">
+                        <button onclick="testRoleButtons()" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                            Test Role Buttons
+                        </button>
+                        <button onclick="testAlertFunctions()" class="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors text-sm">
+                            Test Alert Functions
+                        </button>
+                        <button onclick="clearResults()" class="w-full bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors text-sm">
+                            Clear Results
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testLoginType = 'user';
+
+        // Test functions
+        function testSetLoginType(type, event) {
+            testLoginType = type;
+            console.log('Test login type changed to:', testLoginType);
+            
+            const buttons = document.querySelectorAll('.flex button');
+            buttons.forEach(btn => {
+                btn.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+                btn.classList.add('text-gray-600');
+            });
+            event.target.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+            event.target.classList.remove('text-gray-600');
+            
+            // Update indicator
+            const indicator = document.getElementById('test-login-type-indicator');
+            if (indicator) {
+                const typeText = type === 'user' ? 'User Login' : 'Admin Login';
+                indicator.innerHTML = `<i class="fas fa-info-circle mr-1"></i>Selected: <span class="font-semibold text-blue-600">${typeText}</span>`;
+            }
+            
+            updateTestResults(`✅ Role changed to: ${type}`);
+            updateDebugInfo();
+        }
+
+        async function testHandleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            const role = testLoginType.toUpperCase();
+
+            updateTestResults(`🔄 Testing login with role: ${role}`);
+
+            // Check if professional alerts are loaded
+            const alertsLoaded = typeof showLoadingState !== 'undefined';
+            let loadingId = null;
+
+            // Show loading state
+            if (alertsLoaded) {
+                loadingId = showLoadingState('Testing login...');
+            }
+
+            try {
+                const response = await fetch("/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password, role })
+                });
+
+                const contentType = response.headers.get("content-type");
+
+                if (alertsLoaded && loadingId) {
+                    hideLoadingState(loadingId);
+                }
+
+                if (!response.ok) {
+                    const errorData = contentType && contentType.includes("application/json")
+                        ? await response.json()
+                        : { error: "Unknown error" };
+                    
+                    updateTestResults(`❌ Login failed: ${errorData.error || 'Unknown error'}`);
+                    
+                    if (alertsLoaded) {
+                        if (errorData.type === 'role_mismatch') {
+                            showError(errorData.message || 'Role mismatch. Please select the correct login type (User or Admin).', 'Role Mismatch');
+                        } else if (errorData.type === 'invalid_credentials') {
+                            showError(errorData.message || 'Invalid email or password. Please check your credentials and try again.', 'Login Failed');
+                        } else {
+                            showError(errorData.error || 'Login failed. Please try again.', 'Login Error');
+                        }
+                    } else {
+                        alert('Login failed: ' + (errorData.error || 'Unknown error'));
+                    }
+                } else {
+                    const data = await response.json();
+                    updateTestResults(`✅ Login successful! Role: ${role}, Redirect: ${data.redirectUrl}`);
+                    
+                    if (alertsLoaded) {
+                        showSuccess(`Login successful! Role: ${role}`, 'Login Test Success');
+                    } else {
+                        alert('Login successful! Role: ' + role);
+                    }
+                }
+            } catch (err) {
+                if (alertsLoaded && loadingId) {
+                    hideLoadingState(loadingId);
+                }
+                updateTestResults(`❌ Network error: ${err.message}`);
+                
+                if (alertsLoaded) {
+                    showError('Network error. Please check your connection and try again.', 'Connection Error');
+                } else {
+                    alert('Network error: ' + err.message);
+                }
+                console.error('Test login error:', err);
+            }
+        }
+
+        function testRoleButtons() {
+            const buttons = document.querySelectorAll('.flex button');
+            updateTestResults(`🔍 Found ${buttons.length} role buttons`);
+            
+            buttons.forEach((btn, index) => {
+                const text = btn.textContent.trim();
+                updateTestResults(`Button ${index}: ${text}`);
+            });
+        }
+
+        function testAlertFunctions() {
+            const functions = {
+                showLoadingState: typeof showLoadingState !== 'undefined',
+                showError: typeof showError !== 'undefined',
+                showSuccess: typeof showSuccess !== 'undefined',
+                showWarning: typeof showWarning !== 'undefined',
+                showInfo: typeof showInfo !== 'undefined'
+            };
+            
+            updateTestResults('🔍 Alert functions status:');
+            Object.entries(functions).forEach(([name, loaded]) => {
+                updateTestResults(`${name}: ${loaded ? '✅' : '❌'}`);
+            });
+        }
+
+        function updateTestResults(message) {
+            const resultsDiv = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const resultItem = document.createElement('div');
+            resultItem.className = 'flex justify-between items-center p-2 bg-gray-50 rounded';
+            resultItem.innerHTML = `
+                <span>${message}</span>
+                <span class="text-xs text-gray-500">${timestamp}</span>
+            `;
+            resultsDiv.appendChild(resultItem);
+            
+            // Keep only last 10 results
+            const results = resultsDiv.querySelectorAll('div');
+            if (results.length > 10) {
+                results[0].remove();
+            }
+        }
+
+        function updateDebugInfo() {
+            document.getElementById('debug-login-type').textContent = testLoginType;
+            document.getElementById('debug-alerts').textContent = typeof showLoadingState !== 'undefined' ? '✅ Loaded' : '❌ Not Loaded';
+            document.getElementById('debug-buttons').textContent = document.querySelectorAll('.flex button').length + ' found';
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '<p class="text-gray-600">Results cleared. Click any button above to test the role-based login functionality.</p>';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Role-based login test page loaded');
+            updateDebugInfo();
+            updateTestResults('📋 Test page initialized');
+            
+            if (typeof showInfo !== 'undefined') {
+                showInfo('Role-based login test page loaded. Click any button to test functionality.', 'Test Page Ready');
+            }
+        });
+    </script>
+</body>
+</html>

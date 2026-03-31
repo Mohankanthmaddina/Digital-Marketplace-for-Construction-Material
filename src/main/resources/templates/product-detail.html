@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Product Details - ' + ${product.name}">Product Details - BuildPro</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #d1d5db;
+            background: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .quantity-input {
+            width: 60px;
+            height: 40px;
+            border: 1px solid #d1d5db;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/'">
+                <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-hard-hat text-white text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-blue-600">BuildPro</span>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="/homepage" class="text-gray-700 hover:text-blue-600 transition-colors">Home</a>
+                <a href="/categories/view" class="text-gray-700 hover:text-blue-600 transition-colors">Categories</a>
+                <a href="/products/view" class="text-gray-700 hover:text-blue-600 transition-colors">Products</a>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="relative cursor-pointer" onclick="goToCart()">
+                    <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+                    <span class="cart-badge" id="cart-count">0</span>
+                </div>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    onclick="logout()">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Product Details -->
+    <div class="max-w-6xl mx-auto my-12 px-4">
+
+        <button class="mb-6 text-blue-600 hover:text-blue-800 flex items-center"
+            onclick="window.location.href='/products/view'">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Products
+        </button>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <!-- Product Image -->
+            <div>
+                <img th:src="${product.imageUrl}" alt="Product Image" class="w-full h-96 object-cover rounded-lg"
+                    id="product-detail-image">
+            </div>
+
+            <!-- Product Details Section -->
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2" th:text="${product.name}">Product Name</h1>
+                <p class="text-gray-600 mb-4" th:text="'Brand: ' + ${product.brand}">Brand Name</p>
+
+                <div class="flex items-center mb-6">
+                    <div class="text-2xl font-bold text-blue-600 mr-4" th:text="'₹' + ${product.price}">₹0.00</div>
+                    <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                        In Stock (<span th:text="${product.stockQuantity}">0</span>)
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Description</h3>
+                    <p class="text-gray-700" th:text="${product.description}">
+                        Product description goes here...
+                    </p>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Specifications</h3>
+                    <p class="text-gray-700 whitespace-pre-line" th:text="${product.specifications}">
+                        Specification details...
+                    </p>
+                </div>
+
+                <!-- Quantity + Buttons -->
+                <div class="flex space-x-4 mb-6">
+                    <div class="flex items-center border rounded-lg">
+                        <!--<button class="quantity-btn" onclick="decreaseQuantity()">-</button>
+                        <input type="number" class="quantity-input" id="product-quantity" value="1" min="1" max="100">
+                        <button class="quantity-btn" onclick="increaseQuantity()">+</button> -->
+                    </div>
+
+                    <button
+                        class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                        th:onclick="'event.stopPropagation(); addToCart(' + ${product.id} + ');'">
+                        <i class="fas fa-cart-plus mr-2"></i>Add to Cart
+                    </button>
+
+                    <button
+                        class="flex-1 bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+                        th:onclick="'buyNow(' + ${product.id} + ')'">
+                        <i class="fas fa-bolt mr-2"></i>Buy Now
+                    </button>
+                </div>
+
+                <!-- Delivery Info -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-truck text-yellow-600 mr-2"></i>
+                        <span class="font-semibold">Delivery Info:</span>
+                    </div>
+                    <p class="text-sm text-yellow-700 mt-1">
+                        Free delivery within 10km. Get 5% discount when orders cluster within 20km radius.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script>
+        let quantity = 1;
+
+        function increaseQuantity() {
+            quantity++;
+            document.getElementById('product-quantity').value = quantity;
+        }
+
+        function decreaseQuantity() {
+            if (quantity > 1) {
+                quantity--;
+                document.getElementById('product-quantity').value = quantity;
+            }
+        }
+
+        function addToCart(productId) {
+            const userId = localStorage.getItem('currentUserId');
+            if (!userId) {
+                showInfo("Please login first! 🔒", "Alert");
+                window.location.href = "/login";
+                return;
+            }
+
+            // Show loading state - find the button element (handle clicks on icon)
+            const button = event.target.closest('button') || event.target;
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Adding...';
+            button.disabled = true;
+
+            fetch(`/products/add/${productId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: parseInt(userId) })
+            })
+                .then(response => response.text())
+                .then(msg => {
+                    if (msg.includes("successfully")) {
+                        // Update cart count
+                        updateCartCount();
+                        // Show success message
+                        showNotification("Product added to cart!", "success");
+                    } else {
+                        showNotification("Error: " + msg, "error");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showNotification("Error adding product to cart", "error");
+                })
+                .finally(() => {
+                    button.innerHTML = originalHTML;
+                    button.disabled = false;
+                });
+        }
+
+
+        function buyNow(productId) {
+            const userId = localStorage.getItem('currentUserId');
+            if (!userId) {
+                showInfo("Please login first to buy products! 🔒", "Alert");
+                window.location.href = "/login";
+                return;
+            }
+
+            // Show loading state - find the button element (handle clicks on icon)
+            const button = event.target.closest('button') || event.target;
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+            button.disabled = true;
+
+            // Redirect directly to Buy Now checkout page
+            window.location.href = `/buynow/checkout?productId=${productId}&userId=${userId}&quantity=1`;
+        }
+
+        function goToCart() {
+            const userId = localStorage.getItem("currentUserId");
+            if (!userId) {
+                showInfo("Please login first to view your cart!", "Alert");
+                window.location.href = "/login";
+                return;
+            }
+            window.location.href = `/cart/view?userId=${userId}`;
+        }
+
+        function logout() {
+            localStorage.clear();
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                }`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function updateCartCount() {
+            const userId = localStorage.getItem('currentUserId');
+            if (!userId) {
+                const cartCountEl = document.getElementById('cart-count');
+                if (cartCountEl) {
+                    cartCountEl.textContent = '0';
+                }
+                return;
+            }
+
+            fetch(`/cart?userId=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const count = data.items ? data.items.length : 0;
+                    const cartCountEl = document.getElementById('cart-count');
+                    if (cartCountEl) {
+                        cartCountEl.textContent = count;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching cart count:', err);
+                    const cartCountEl = document.getElementById('cart-count');
+                    if (cartCountEl) {
+                        cartCountEl.textContent = '0';
+                    }
+                });
+        }
+
+        // Initialize cart count on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            updateCartCount();
+        });
+    </script>
+</body>
+
+</html>

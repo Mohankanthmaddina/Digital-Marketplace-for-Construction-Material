@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Buildpro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            margin: 0 5px;
+        }
+
+        .otp-input:focus {
+            border-color: #2563eb;
+            outline: none;
+        }
+
+        /* Inline Professional Alerts CSS */
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .professional-alert {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 16px;
+            padding: 0;
+            overflow: hidden;
+            pointer-events: auto;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-left: 4px solid;
+            position: relative;
+        }
+
+        .professional-alert.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .professional-alert.hide {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .alert-header {
+            padding: 20px 24px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .alert-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            flex: 1;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            color: #6b7280;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+        }
+
+        .alert-close:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .alert-body {
+            padding: 0 24px 20px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #4b5563;
+        }
+
+        .alert-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 0 0 12px 12px;
+            animation: progressBar 5s linear forwards;
+        }
+
+        @keyframes progressBar {
+            from {
+                width: 100%;
+            }
+
+            to {
+                width: 0%;
+            }
+        }
+
+        /* Success Alert */
+        .alert-success {
+            border-left-color: #10b981;
+        }
+
+        .alert-success .alert-icon {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-success .alert-title {
+            color: #065f46;
+        }
+
+        /* Error Alert */
+        .alert-error {
+            border-left-color: #ef4444;
+        }
+
+        .alert-error .alert-icon {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-error .alert-title {
+            color: #991b1b;
+        }
+
+        /* Warning Alert */
+        .alert-warning {
+            border-left-color: #f59e0b;
+        }
+
+        .alert-warning .alert-icon {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-warning .alert-title {
+            color: #92400e;
+        }
+
+        /* Info Alert */
+        .alert-info {
+            border-left-color: #3b82f6;
+        }
+
+        .alert-info .alert-icon {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .alert-info .alert-title {
+            color: #1e40af;
+        }
+
+        /* Loading Alert */
+        .alert-loading {
+            border-left-color: #6b7280;
+        }
+
+        .alert-loading .alert-icon {
+            background: #f3f4f6;
+            color: #374151;
+            animation: spin 1s linear infinite;
+        }
+
+        .alert-loading .alert-title {
+            color: #374151;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 640px) {
+            .alert-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+
+        /* ===== JWT VISUALIZER PANEL ===== */
+        #jwt-panel {
+            position: fixed;
+            top: 0;
+            right: -480px;
+            width: 460px;
+            height: 100vh;
+            background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            box-shadow: -8px 0 40px rgba(0, 0, 0, 0.6);
+            z-index: 99999;
+            transition: right 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow-y: auto;
+            font-family: 'Segoe UI', sans-serif;
+            border-left: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        #jwt-panel.open {
+            right: 0;
+        }
+
+        .jwt-panel-header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .jwt-panel-header .lock-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .jwt-panel-header h2 {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .jwt-panel-header p {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 12px;
+            margin: 2px 0 0;
+        }
+
+        .jwt-panel-close {
+            margin-left: auto;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .jwt-panel-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .jwt-section {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .jwt-section-title {
+            color: #94a3b8;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        /* User badge */
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .user-name {
+            color: #f1f5f9;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .role-badge.admin {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .role-badge.user {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        /* Status row */
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        .status-text {
+            color: #34d399;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-expires {
+            margin-left: auto;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        /* JWT token blocks */
+        .jwt-token-display {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .jwt-segment {
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            word-break: break-all;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .jwt-segment-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .jwt-segment.header {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+        }
+
+        .jwt-segment.payload {
+            background: rgba(168, 85, 247, 0.12);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            color: #d8b4fe;
+        }
+
+        .jwt-segment.sig {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: #93c5fd;
+        }
+
+        .jwt-segment.header .jwt-segment-label {
+            color: #f87171;
+        }
+
+        .jwt-segment.payload .jwt-segment-label {
+            color: #c084fc;
+        }
+
+        .jwt-segment.sig .jwt-segment-label {
+            color: #60a5fa;
+        }
+
+        /* Full token */
+        .jwt-full-token {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            word-break: break-all;
+            line-height: 1.6;
+            color: #94a3b8;
+        }
+
+        .jwt-token-colored .header-part {
+            color: #f87171;
+        }
+
+        .jwt-token-colored .dot {
+            color: #475569;
+        }
+
+        .jwt-token-colored .payload-part {
+            color: #c084fc;
+        }
+
+        .jwt-token-colored .sig-part {
+            color: #60a5fa;
+        }
+
+        /* Storage items */
+        .storage-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .storage-row:last-child {
+            border-bottom: none;
+        }
+
+        .storage-key {
+            color: #94a3b8;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .storage-val {
+            color: #34d399;
+            font-size: 12px;
+            font-family: monospace;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .storage-val.warn {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        /* Redirect countdown */
+        .redirect-bar {
+            margin: 0 24px 24px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .redirect-bar i {
+            color: #818cf8;
+            font-size: 16px;
+        }
+
+        .redirect-bar span {
+            color: #c7d2fe;
+            font-size: 13px;
+        }
+
+        .redirect-bar strong {
+            color: #a5b4fc;
+        }
+
+        @media (max-width: 480px) {
+            #jwt-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro</span>
+                </div>
+                <a href="/" class="text-blue-600 hover:text-blue-800">← Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-md mx-auto my-12 bg-white rounded-xl shadow-xl p-8">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">Welcome Back</h2>
+            <p class="text-gray-600">Sign in to your account</p>
+        </div>
+
+        <div class="mb-6">
+            <div class="flex border-b">
+                <button id="user-login-btn"
+                    class="flex-1 py-3 px-4 text-center font-semibold border-b-2 border-blue-600 text-blue-600"
+                    onclick="setLoginType('user', event)">
+                    <i class="fas fa-user mr-2"></i>User Login
+                </button>
+                <button id="admin-login-btn" class="flex-1 py-3 px-4 text-center font-semibold text-gray-600"
+                    onclick="setLoginType('admin', event)">
+                    <i class="fas fa-shield-alt mr-2"></i>Admin Login
+                </button>
+            </div>
+            <div id="login-type-indicator" class="mt-2 text-sm text-gray-600 text-center">
+                <i class="fas fa-info-circle mr-1"></i>Selected: <span class="font-semibold text-blue-600">User
+                    Login</span>
+            </div>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Email Address</label>
+                <input type="email"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    placeholder="Enter your email" required>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 mb-2">Password</label>
+                <input type="password"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    placeholder="Enter your password" required>
+            </div>
+
+            <div class="mb-6">
+                <button type="submit"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    Sign In
+                </button>
+            </div>
+
+            <div class="text-center">
+                <a href="forgot-password" class="text-blue-600 hover:underline">Forgot Password?</a>
+                <p class="mt-4 text-gray-600">
+                    Don't have an account?
+                    <a href="/register" class="text-blue-600 hover:underline">Register here</a>
+                </p>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let loginType = 'user';
+        let alertCounter = 0;
+        let alerts = new Map();
+
+        // Inline Professional Alerts System
+        function initAlerts() {
+            if (!document.getElementById('alert-container')) {
+                const container = document.createElement('div');
+                container.id = 'alert-container';
+                container.className = 'alert-container';
+                document.body.appendChild(container);
+            }
+        }
+
+        function showAlert(type, message, title, options = {}) {
+            const {
+                duration = 5000,
+                showClose = true,
+                persistent = false
+            } = options;
+
+            const alertId = `alert-${++alertCounter}`;
+            const alert = document.createElement('div');
+            alert.id = alertId;
+            alert.className = `professional-alert alert-${type}`;
+
+            const icon = getIcon(type);
+            const closeButton = showClose ? createCloseButton(alertId) : '';
+            const progress = !persistent ? '<div class="alert-progress"></div>' : '';
+
+            alert.innerHTML = `
+                <div class="alert-header">
+                    <div class="alert-icon">${icon}</div>
+                    <h3 class="alert-title">${title}</h3>
+                    ${closeButton}
+                </div>
+                <div class="alert-body">${message}</div>
+                ${progress}
+            `;
+
+            const container = document.getElementById('alert-container');
+            container.appendChild(alert);
+            alerts.set(alertId, alert);
+
+            setTimeout(() => {
+                alert.classList.add('show');
+            }, 10);
+
+            if (!persistent && duration > 0) {
+                setTimeout(() => {
+                    hideAlert(alertId);
+                }, duration);
+            }
+
+            return alertId;
+        }
+
+        function hideAlert(alertId) {
+            const alert = alerts.get(alertId);
+            if (alert) {
+                alert.classList.add('hide');
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                    alerts.delete(alertId);
+                }, 300);
+            }
+        }
+
+        function getIcon(type) {
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠',
+                info: 'ℹ',
+                loading: '⟳'
+            };
+            return icons[type] || icons.info;
+        }
+
+        function createCloseButton(alertId) {
+            return `<button class="alert-close" onclick="hideAlert('${alertId}')" aria-label="Close">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>`;
+        }
+
+        // Alert Functions
+        function showSuccess(message, title = 'Success') {
+            return showAlert('success', message, title);
+        }
+
+        function showError(message, title = 'Error') {
+            return showAlert('error', message, title);
+        }
+
+        function showWarning(message, title = 'Warning') {
+            return showAlert('warning', message, title);
+        }
+
+        function showInfo(message, title = 'Information') {
+            return showAlert('info', message, title);
+        }
+
+        function showLoading(message, title = 'Loading') {
+            return showAlert('loading', message, title, { persistent: true, showClose: false });
+        }
+
+        function showLoadingState(message) {
+            return showLoading(message, 'Please Wait');
+        }
+
+        function hideLoadingState(alertId) {
+            if (alertId) {
+                hideAlert(alertId);
+            }
+        }
+
+        function showQuickInfo(message, type = 'info') {
+            return showAlert(type, message, '', { duration: 2500 });
+        }
+
+        function setLoginType(type, event) {
+            loginType = type;
+            console.log('Login type changed to:', loginType);
+
+            const buttons = document.querySelectorAll('.flex button');
+            buttons.forEach(btn => {
+                btn.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+                btn.classList.add('text-gray-600');
+            });
+            event.target.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+            event.target.classList.remove('text-gray-600');
+
+            // Update indicator
+            const indicator = document.getElementById('login-type-indicator');
+            if (indicator) {
+                const typeText = type === 'user' ? 'User Login' : 'Admin Login';
+                indicator.innerHTML = `<i class="fas fa-info-circle mr-1"></i>Selected: <span class="font-semibold text-blue-600">${typeText}</span>`;
+            }
+
+            // Show visual feedback
+            showQuickInfo(`Switched to ${type} login`, 'info');
+        }
+
+        // ===== JWT VISUALIZER FUNCTIONS =====
+        let redirectTimer = null;
+
+        function parseJwtSegments(token) {
+            try {
+                const parts = token.split('.');
+                if (parts.length !== 3) return null;
+                const decode = (b64) => {
+                    try { return JSON.parse(atob(b64.replace(/-/g, '+').replace(/_/g, '/'))); }
+                    catch { return {}; }
+                };
+                return {
+                    header: parts[0],
+                    payload: parts[1],
+                    sig: parts[2],
+                    headerObj: decode(parts[0]),
+                    payloadObj: decode(parts[1])
+                };
+            } catch { return null; }
+        }
+
+        function startCountdown(expSeconds, el) {
+            function tick() {
+                const now = Math.floor(Date.now() / 1000);
+                const left = expSeconds - now;
+                if (left <= 0) { el.textContent = 'Expired'; return; }
+                const m = Math.floor(left / 60), s = left % 60;
+                el.textContent = `Expires in ${m}m ${String(s).padStart(2, '0')}s`;
+            }
+            tick();
+            return setInterval(tick, 1000);
+        }
+
+        function showJwtPanel(data) {
+            const token = data.token || '';
+            const user = data.user || {};
+            const segs = parseJwtSegments(token);
+            const isAdmin = (user.role || '').toUpperCase() === 'ADMIN';
+            const userName = user.name || user.email || 'User';
+            const initials = userName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+            // Color-coded full token
+            const tokenHtml = segs
+                ? `<span class="header-part">${segs.header}</span><span class="dot">.</span><span class="payload-part">${segs.payload}</span><span class="dot">.</span><span class="sig-part">${segs.sig}</span>`
+                : token;
+
+            // Payload info
+            const payloadPretty = segs ? JSON.stringify(segs.payloadObj, null, 2) : 'N/A';
+            const headerPretty = segs ? JSON.stringify(segs.headerObj, null, 2) : 'N/A';
+
+            // localStorage items
+            const userId = user.id !== undefined && user.id !== null ? String(user.id) : 'N/A';
+            const tokenShort = token.length > 24 ? token.slice(0, 24) + '…' : token;
+
+            document.getElementById('jwt-panel').innerHTML = `
+                <div class="jwt-panel-header">
+                    <div class="lock-icon">🔐</div>
+                    <div>
+                        <h2>JWT Session Active</h2>
+                        <p>Token stored · Session established</p>
+                    </div>
+                    <button class="jwt-panel-close" onclick="closeJwtPanel()">✕</button>
+                </div>
+
+                <div class="jwt-section">
+                    <div class="jwt-section-title">👤 Authenticated User</div>
+                    <div class="user-badge">
+                        <div class="user-avatar">${initials}</div>
+                        <div>
+                            <div class="user-name">${userName}</div>
+                            <span class="role-badge ${isAdmin ? 'admin' : 'user'}">${isAdmin ? '⚡ ADMIN' : '✅ USER'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="jwt-section">
+                    <div class="jwt-section-title">🟢 Session Status</div>
+                    <div class="status-row">
+                        <div class="pulse-dot"></div>
+                        <span class="status-text">Session Active</span>
+                        <span class="status-expires" id="jwt-countdown">Calculating…</span>
+                    </div>
+                </div>
+
+                <div class="jwt-section">
+                    <div class="jwt-section-title">🔑 JWT Token Breakdown</div>
+                    <div class="jwt-token-display">
+                        <div class="jwt-segment header">
+                            <div class="jwt-segment-label">🔴 Header · Algorithm &amp; Type</div>
+                            <pre style="margin:0;white-space:pre-wrap;font-size:11px">${headerPretty}</pre>
+                        </div>
+                        <div class="jwt-segment payload">
+                            <div class="jwt-segment-label">🟣 Payload · Claims &amp; User Info</div>
+                            <pre style="margin:0;white-space:pre-wrap;font-size:11px">${payloadPretty}</pre>
+                        </div>
+                        <div class="jwt-segment sig">
+                            <div class="jwt-segment-label">🔵 Signature · Tamper-Proof Hash</div>
+                            <div style="word-break:break-all">${segs ? segs.sig.slice(0, 40) + '…' : 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="jwt-section">
+                    <div class="jwt-section-title">💾 LocalStorage Saved</div>
+                    <div class="storage-row">
+                        <span class="storage-key">authToken</span>
+                        <span class="storage-val">${tokenShort}</span>
+                    </div>
+                    <div class="storage-row">
+                        <span class="storage-key">currentUserId</span>
+                        <span class="storage-val ${userId === 'N/A' ? 'warn' : ''}">${userId}</span>
+                    </div>
+                    <div class="storage-row">
+                        <span class="storage-key">currentUser.name</span>
+                        <span class="storage-val">${userName}</span>
+                    </div>
+                    <div class="storage-row">
+                        <span class="storage-key">currentUser.role</span>
+                        <span class="storage-val">${user.role || 'N/A'}</span>
+                    </div>
+                </div>
+
+                <div class="jwt-section">
+                    <div class="jwt-section-title">📋 Full Token (Color Coded)</div>
+                    <div class="jwt-full-token jwt-token-colored">${tokenHtml}</div>
+                </div>
+            `;
+
+            // Start the countdown
+            if (segs && segs.payloadObj.exp) {
+                startCountdown(segs.payloadObj.exp, document.getElementById('jwt-countdown'));
+            }
+
+            // Slide panel in
+            requestAnimationFrame(() => {
+                document.getElementById('jwt-panel').classList.add('open');
+            });
+
+            // Add redirect footer
+            const redirectBar = document.createElement('div');
+            redirectBar.className = 'redirect-bar';
+            redirectBar.id = 'redirect-bar';
+            redirectBar.innerHTML = `<i class="fas fa-arrow-right"></i> <span>Redirecting to <strong>${isAdmin ? 'Admin Dashboard' : 'Homepage'}</strong> in <strong id="redirect-count">3</strong>s…</span>`;
+            document.getElementById('jwt-panel').appendChild(redirectBar);
+
+            let count = 3;
+            redirectTimer = setInterval(() => {
+                count--;
+                const el = document.getElementById('redirect-count');
+                if (el) el.textContent = count;
+                if (count <= 0) {
+                    clearInterval(redirectTimer);
+                    window.location.href = data.redirectUrl;
+                }
+            }, 1000);
+        }
+
+        function closeJwtPanel() {
+            document.getElementById('jwt-panel').classList.remove('open');
+            if (redirectTimer) clearInterval(redirectTimer);
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = e.target[0].value;
+            const password = e.target[1].value;
+            const role = loginType.toUpperCase();
+
+            const loadingId = showLoadingState('Signing you in…');
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role })
+                });
+
+                const contentType = response.headers.get('content-type');
+
+                if (!response.ok) {
+                    const errorData = contentType && contentType.includes('application/json')
+                        ? await response.json()
+                        : { error: 'Unknown error' };
+                    hideLoadingState(loadingId);
+                    if (errorData.type === 'admin_pending') showWarning(errorData.message, 'Admin Account Pending');
+                    else if (errorData.type === 'user_pending') showWarning(errorData.message, 'Account Not Verified');
+                    else if (errorData.type === 'invalid_credentials') showError(errorData.message || 'Invalid email or password.', 'Login Failed');
+                    else if (errorData.type === 'role_mismatch') showError(errorData.message || 'Role mismatch.', 'Role Mismatch');
+                    else if (errorData.type === 'server_error') showError('Server Error: ' + (errorData.message || errorData.error || 'Unknown server error'), 'Server Error');
+                    else showError(errorData.error || errorData.message || 'Login failed.', 'Login Error');
+                    return;
+                }
+
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    hideLoadingState(loadingId);
+
+                    // ✅ Store user data — id is now included in UserSummaryDTO
+                    if (data.user && data.user.id !== undefined && data.user.id !== null) {
+                        localStorage.setItem('currentUserId', String(data.user.id));
+                        localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    }
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                        // Also store as a cookie so the server-side JwtAuthenticationFilter
+                        // can read it on full-page navigations (e.g. /admin/reports, /admin/dashboard).
+                        // localStorage is never sent to the server automatically; cookies are.
+                        document.cookie = `authToken=${data.token}; path=/; SameSite=Strict`;
+                    }
+
+                    // ✅ Show beautiful JWT panel & auto-redirect
+                    showJwtPanel(data);
+
+                } else {
+                    hideLoadingState(loadingId);
+                    showError('Unexpected response from server.', 'Login Error');
+                }
+            } catch (err) {
+                hideLoadingState(loadingId);
+                showError('Network error. Please check your connection.', 'Connection Error');
+                console.error('Login error:', err);
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Login page loaded');
+            initAlerts();
+
+            // Test if role buttons are working
+            const roleButtons = document.querySelectorAll('.flex button');
+            console.log('Found role buttons:', roleButtons.length);
+
+            // Add click listeners for debugging
+            roleButtons.forEach((btn, index) => {
+                console.log(`Button ${index}:`, btn.textContent.trim());
+            });
+        });
+    </script>
+    <!-- JWT Visualizer Slide Panel -->
+    <div id="jwt-panel"></div>
+
+</body>
+
+</html>

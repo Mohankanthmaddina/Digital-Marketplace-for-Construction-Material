@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Orders - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-sidebar {
+            min-height: calc(100vh - 80px);
+            background: #1f2937;
+        }
+
+        .admin-menu {
+            color: white;
+            padding: 12px 20px;
+            display: block;
+            transition: background 0.3s;
+        }
+
+        .admin-menu:hover,
+        .admin-menu.active {
+            background: #374151;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-confirmed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-shipped {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .status-delivered {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+
+    <script>
+        // Restrict direct access
+        document.addEventListener("DOMContentLoaded", () => {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (!user || !user.role || user.role.name.toLowerCase() !== 'admin') {
+                showInfo('Access denied. Admin privileges required.', 'Alert');
+                window.location.href = '/login';
+            }
+        });
+
+        // Logout function
+        function logout() {
+            // Clear any local storage
+            localStorage.clear();
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Calculate order statistics
+        function calculateOrderStats() {
+            const orders = document.querySelectorAll('tr[th\\:each]');
+            let pending = 0, confirmed = 0, shipped = 0, delivered = 0;
+
+            orders.forEach(row => {
+                const statusElement = row.querySelector('.status-badge');
+                if (statusElement) {
+                    const status = statusElement.textContent.trim();
+                    switch (status) {
+                        case 'PENDING': pending++; break;
+                        case 'CONFIRMED': confirmed++; break;
+                        case 'SHIPPED': shipped++; break;
+                        case 'DELIVERED': delivered++; break;
+                    }
+                }
+            });
+
+            // Update the statistics display
+            const statsElements = document.querySelectorAll('.text-2xl.font-bold');
+            if (statsElements.length >= 4) {
+                statsElements[0].textContent = pending;
+                statsElements[1].textContent = confirmed;
+                statsElements[2].textContent = shipped;
+                statsElements[3].textContent = delivered;
+            }
+        }
+
+        // Calculate stats when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(calculateOrderStats, 1000);
+        });
+
+        // Update order status
+        function updateOrderStatus(orderId, currentStatus) {
+            const statuses = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+            const currentIndex = statuses.indexOf(currentStatus);
+            const nextStatus = statuses[currentIndex + 1] || statuses[0];
+
+            if (confirm(`Update order status from ${currentStatus} to ${nextStatus}?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/admin/orders/' + orderId + '/status';
+
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'status';
+                statusInput.value = nextStatus;
+                form.appendChild(statusInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Toggle status editor visibility
+        function toggleStatusEditor(orderId, hide = false) {
+            const editor = document.getElementById('status-editor-' + orderId);
+            if (editor) {
+                if (hide) {
+                    editor.classList.add('hidden');
+                } else {
+                    editor.classList.toggle('hidden');
+                }
+            }
+        }
+
+        // Debug function to test order details
+        function testOrderDetails(orderId) {
+            console.log('Testing order details for ID:', orderId);
+            fetch('/admin/orders/test/' + orderId)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Order test result:', data);
+                    if (data.success) {
+                        console.log('Order found with', data.itemsCount, 'items');
+                    } else {
+                        console.error('Order test failed:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error testing order:', error);
+                });
+        }
+
+        // Debug function to test order details (can be called manually from console)
+        function debugOrderDetails(orderId) {
+            console.log('Debugging order details for ID:', orderId);
+            testOrderDetails(orderId);
+        }
+    </script>
+</head>
+
+<body class="min-h-screen bg-gray-100">
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer"
+                    onclick="window.location.href='/admin/dashboard'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">Buildpro Admin</span>
+                </div>
+                <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                    onclick="logout()">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="admin-sidebar w-64">
+            <div class="p-4">
+                <div class="text-white text-lg font-semibold mb-6">Admin Panel</div>
+                <a href="/admin/dashboard" class="admin-menu">
+                    <i class="fas fa-chart-line mr-3"></i> Dashboard
+                </a>
+                <a href="/admin/products" class="admin-menu">
+                    <i class="fas fa-boxes mr-3"></i> Products
+                </a>
+                <a href="/admin/categories" class="admin-menu">
+                    <i class="fas fa-tags mr-3"></i> Categories
+                </a>
+                <a href="/admin/orders" class="admin-menu active">
+                    <i class="fas fa-shopping-cart mr-3"></i> Orders
+                </a>
+                <a href="/admin/users" class="admin-menu">
+                    <i class="fas fa-users mr-3"></i> Users
+                </a>
+                <a href="/admin/reports" class="admin-menu">
+                    <i class="fas fa-chart-bar mr-3"></i> Reports
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <!-- Success Message -->
+            <div th:if="${param.success}"
+                class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span th:text="${param.success}"></span>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${param.error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span th:text="${param.error}"></span>
+            </div>
+
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">Order Management</h1>
+                <div class="flex gap-4">
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        onclick="window.location.reload()">
+                        <i class="fas fa-sync-alt mr-2"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Orders Table (desktop) -->
+            <div class="hidden md:block bg-white rounded-lg shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mobile</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr th:if="${orders == null or #lists.isEmpty(orders)}">
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                    No orders found.
+                                </td>
+                            </tr>
+                            <tr th:each="order : ${orders}" th:if="${orders != null and !#lists.isEmpty(orders)}">
+                                <td class="px-6 py-4">
+                                    <div class="font-medium text-blue-600">#<span th:text="${order.id}"></span></div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div>
+                                        <div class="font-medium" th:text="${order.userName}"></div>
+                                        <div class="text-sm text-gray-500" th:text="${order.userEmail}"></div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-medium"
+                                        th:text="${order.userMobileNumber != null ? order.userMobileNumber : 'N/A'}">
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4" th:text="${order.orderDateDisplay}"></td>
+                                <td class="px-6 py-4">
+                                    <div class="font-medium">₹<span
+                                            th:text="${order.finalAmount != null ? order.finalAmount : 0}"></span></div>
+                                    <div class="text-sm text-gray-500"
+                                        th:if="${order.discountAmount != null and order.discountAmount > 0}">
+                                        Discount: ₹<span th:text="${order.discountAmount}"></span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span th:class="'status-badge status-' + ${#strings.toLowerCase(order.status)}"
+                                        th:text="${order.status}"></span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex gap-3 items-center">
+                                        <a th:href="@{/admin/orders/{id}(id=${order.id})}"
+                                            class="text-blue-600 hover:text-blue-800 text-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <button type="button" class="text-green-600 hover:text-green-800 text-sm"
+                                            th:data-order-id="${order.id}"
+                                            onclick="toggleStatusEditor(this.dataset.orderId)">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+
+                                        <form th:action="@{'/admin/orders/' + ${order.id} + '/delete'}" method="post"
+                                            onsubmit="return confirm('Delete this order?');">
+                                            <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Inline status editor -->
+                                    <div class="mt-2 hidden" th:id="'status-editor-' + ${order.id}">
+                                        <form th:action="@{'/admin/orders/' + ${order.id} + '/status'}" method="post"
+                                            class="flex gap-2 items-center">
+                                            <select name="status"
+                                                class="border border-gray-300 rounded px-2 py-1 text-sm">
+                                                <option th:selected="${order.status.toString() == 'PENDING'}"
+                                                    value="PENDING">Pending</option>
+                                                <option th:selected="${order.status.toString() == 'CONFIRMED'}"
+                                                    value="CONFIRMED">Confirmed</option>
+                                                <option th:selected="${order.status.toString() == 'SHIPPED'}"
+                                                    value="SHIPPED">Shipped</option>
+                                                <option th:selected="${order.status.toString() == 'DELIVERED'}"
+                                                    value="DELIVERED">Delivered</option>
+                                                <option th:selected="${order.status.toString() == 'CANCELLED'}"
+                                                    value="CANCELLED">Cancelled</option>
+                                            </select>
+                                            <button type="submit"
+                                                class="bg-green-600 text-white text-sm px-3 py-1 rounded">Save</button>
+                                            <button type="button" class="text-gray-600 text-sm"
+                                                th:data-order-id="${order.id}"
+                                                onclick="toggleStatusEditor(this.dataset.orderId, true)">Cancel</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Orders Cards (mobile) -->
+            <div class="md:hidden space-y-4">
+                <div th:if="${orders == null or #lists.isEmpty(orders)}"
+                    class="bg-white rounded-lg shadow p-4 text-center text-gray-500">
+                    No orders found.
+                </div>
+                <div th:each="order : ${orders}" th:if="${orders != null and !#lists.isEmpty(orders)}"
+                    class="bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="font-semibold text-blue-600">#<span th:text="${order.id}"></span></div>
+                            <div class="text-sm text-gray-500" th:text="${order.orderDateDisplay}"></div>
+                        </div>
+                        <span th:class="'status-badge status-' + ${#strings.toLowerCase(order.status)}"
+                            th:text="${order.status}"></span>
+                    </div>
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <div class="font-medium" th:text="${order.userName}"></div>
+                            <div class="text-sm text-gray-500" th:text="${order.userEmail}"></div>
+                            <div class="text-sm text-gray-600 font-medium"
+                                th:text="${order.userMobileNumber != null ? order.userMobileNumber : 'N/A'}"></div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-medium">₹<span
+                                    th:text="${order.finalAmount != null ? order.finalAmount : 0}"></span></div>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="text-blue-600 text-sm">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="#" class="text-green-600 text-sm" th:data-order-id="${order.id}"
+                            onclick="event.preventDefault(); document.getElementById('status-editor-'+this.dataset.orderId).classList.toggle('hidden')">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <form th:action="@{'/admin/orders/' + ${order.id} + '/delete'}" method="post"
+                            onsubmit="return confirm('Delete this order?');">
+                            <button type="submit" class="text-red-600 text-sm">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                    <div class="hidden mt-3" th:id="'status-editor-' + ${order.id}">
+                        <form th:action="@{'/admin/orders/' + ${order.id} + '/status'}" method="post"
+                            class="flex gap-2">
+                            <select name="status" class="border rounded px-2 py-1 text-sm">
+                                <option value="PENDING">Pending</option>
+                                <option value="CONFIRMED">Confirmed</option>
+                                <option value="SHIPPED">Shipped</option>
+                                <option value="DELIVERED">Delivered</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
+                            <button type="submit"
+                                class="bg-green-600 text-white text-sm px-3 py-1 rounded">Save</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Pending</p>
+                            <p class="text-2xl font-bold">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-check-circle text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Confirmed</p>
+                            <p class="text-2xl font-bold">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-shipping-fast text-purple-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Shipped</p>
+                            <p class="text-2xl font-bold">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-check-double text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Delivered</p>
+                            <p class="text-2xl font-bold">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

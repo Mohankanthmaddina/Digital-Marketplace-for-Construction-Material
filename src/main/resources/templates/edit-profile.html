@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro</span>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/homepage" class="text-gray-700 hover:text-blue-600 transition-colors">Home</a>
+                    <a href="/categories/view"
+                        class="text-gray-700 hover:text-blue-600 transition-colors">Categories</a>
+                    <a href="/products/view" class="text-gray-700 hover:text-blue-600 transition-colors">Products</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="relative cursor-pointer" onclick="goToCart()">
+                        <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+                        <span class="cart-badge" id="cart-count">0</span>
+                    </div>
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                            onclick="toggleProfileMenu()">
+                            <i class="fas fa-user-circle text-2xl"></i>
+                            <span class="hidden md:block" th:if="${user != null}" th:text="${user.name}">User</span>
+                            <span class="hidden md:block" th:if="${user == null}">Account</span>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </button>
+                        <div id="profile-menu"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <a href="#" onclick="openMyProfile()"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i> My Profile
+                            </a>
+                            <a href="#" onclick="openMyOrders()"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-shopping-bag mr-2"></i> My Orders
+                            </a>
+                            <a href="#" onclick="openEditProfile()" class="block px-4 py-2 text-blue-600 bg-blue-50">
+                                <i class="fas fa-edit mr-2"></i> Edit Profile
+                            </a>
+                            <hr class="my-2">
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-red-600 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto my-12 px-4">
+        <div class="bg-white rounded-lg shadow p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-800">Edit Profile</h1>
+                <a href="#" onclick="openMyProfile()"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Profile
+                </a>
+            </div>
+
+            <!-- Success Message -->
+            <div th:if="${param.success}"
+                class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span th:text="${param.success}"></span>
+            </div>
+
+            <!-- Edit Profile Form -->
+            <form th:action="@{/profile/update}" th:object="${user}" method="POST" class="space-y-6">
+                <input type="hidden" name="userId" th:if="${user != null}" th:value="${user.id}">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                        <input type="text" th:field="*{name}" required
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <!-- Email (Read-only) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <input type="email" th:if="${user != null}" th:value="${user.email}" disabled
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100 text-gray-500">
+                        <input type="email" th:if="${user == null}" value="" disabled
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100 text-gray-500">
+                        <p class="text-sm text-gray-500 mt-1">Email cannot be changed</p>
+                    </div>
+
+                    <!-- Mobile Number Info -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                        <input type="text" value="Provided during checkout" disabled
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100 text-gray-500">
+                        <p class="text-sm text-gray-500 mt-1">Mobile number is captured during order checkout</p>
+                    </div>
+
+                    <!-- Role (Read-only) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
+                        <input type="text" th:value="${user.role}" disabled
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100 text-gray-500">
+                    </div>
+                </div>
+
+                <!-- Verification Status -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-3">Account Status</h3>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt text-gray-400 mr-3"></i>
+                            <div>
+                                <p class="font-medium">Email Verification</p>
+                                <p class="text-sm text-gray-600">Your email verification status</p>
+                            </div>
+                        </div>
+                        <span th:if="${user != null}"
+                            th:class="${user.isVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"
+                            class="px-3 py-1 rounded-full text-sm font-semibold"
+                            th:text="${user.isVerified ? 'Verified' : 'Not Verified'}">Verified</span>
+                        <span th:if="${user == null}"
+                            class="px-3 py-1 rounded-full text-sm font-semibold bg-gray-100 text-gray-700">Unknown</span>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex justify-end space-x-4">
+                    <a href="#" onclick="openMyProfile()"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-lg transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+            <div th:if="${user == null}" class="mt-6 p-4 bg-yellow-50 text-yellow-800 rounded">
+                Cannot load user details. If you reached this page directly, please open from your dashboard.
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Auto-redirect with userId if missing context
+        const hasUser = [[${ user != null}]];
+        if (!hasUser) {
+            const id = localStorage.getItem('currentUserId');
+            if (id) {
+                const u = new URL(window.location.href);
+                if (!u.searchParams.get('userId')) {
+                    window.location.replace('/profile/edit?userId=' + id);
+                }
+            }
+        }
+
+        function currentUserId() { return localStorage.getItem('currentUserId'); }
+        function openMyProfile() { const id = currentUserId(); if (!id) return; window.location.href = '/profile?userId=' + id; }
+        function openMyOrders() { const id = currentUserId(); if (!id) return; window.location.href = '/profile/orders?userId=' + id; }
+        function openEditProfile() { const id = currentUserId(); if (!id) return; window.location.href = '/profile/edit?userId=' + id; }
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function goToCart() {
+            const userId = localStorage.getItem("currentUserId");
+            if (!userId) {
+                showInfo("Please login first to view your cart!", "Alert");
+                window.location.href = "/login";
+                return;
+            }
+            window.location.href = `/cart/view?userId=${userId}`;
+        }
+
+        function logout() {
+            // Clear local storage
+            localStorage.clear();
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('profile-menu');
+            const button = event.target.closest('button');
+            if (!button || !button.onclick || button.onclick.toString().indexOf('toggleProfileMenu') === -1) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Initialize
+        updateCartCount();
+    </script>
+
+</body>
+
+</html>

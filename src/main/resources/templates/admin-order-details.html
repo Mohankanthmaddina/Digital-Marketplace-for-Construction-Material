@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-sidebar {
+            min-height: calc(100vh - 80px);
+            background: #1f2937;
+        }
+
+        .admin-menu {
+            color: white;
+            padding: 12px 20px;
+            display: block;
+            transition: background 0.3s;
+        }
+
+        .admin-menu:hover,
+        .admin-menu.active {
+            background: #374151;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-confirmed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-shipped {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .status-delivered {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-unknown {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        /* Print Styles */
+        @media print {
+
+            .admin-sidebar,
+            .no-print {
+                display: none !important;
+            }
+
+            .flex {
+                display: block !important;
+            }
+
+            .grid {
+                display: block !important;
+            }
+
+            .space-y-6>*+* {
+                margin-top: 1rem;
+            }
+
+            .shadow {
+                box-shadow: none !important;
+            }
+
+            .bg-gray-100 {
+                background: white !important;
+            }
+
+            .bg-white {
+                background: white !important;
+            }
+
+            .text-blue-600 {
+                color: #000 !important;
+            }
+
+            .border {
+                border: 1px solid #000 !important;
+            }
+        }
+
+        /* Hover Effects */
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+
+    <script>
+        // Admin order details page - authentication check with bypass options
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log('Admin order details page loading...');
+            console.log('Current URL:', window.location.href);
+
+            // Check for bypass parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const bypassAuth = urlParams.get('bypass');
+
+            if (bypassAuth === 'true') {
+                console.log('✅ Authentication bypassed for testing');
+                return;
+            }
+
+            // Check if user is logged in via localStorage
+            const userData = localStorage.getItem('currentUser');
+            console.log('User data from localStorage:', userData);
+
+            if (!userData) {
+                console.log('⚠️ No user data found in localStorage');
+                console.log('💡 To test the page, add ?bypass=true to the URL');
+                console.log('💡 Or login as admin first');
+
+                // Show a user-friendly message instead of redirecting immediately
+                const continueAnyway = confirm('No user authentication found. Do you want to continue anyway?\n\nClick OK to view the page, or Cancel to go to login.\n\nFor testing, you can also add ?bypass=true to the URL.');
+
+                if (!continueAnyway) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                console.log('✅ User chose to continue without authentication');
+                return;
+            }
+
+            try {
+                const user = JSON.parse(userData);
+                console.log('Parsed user:', user);
+
+                if (!user || !user.role) {
+                    console.log('⚠️ Invalid user or missing role');
+                    showInfo('Invalid user data. Please login again or add ?bypass=true to URL for testing.', 'Alert');
+                    return;
+                }
+
+                const roleName = user.role.name || user.role;
+                console.log('User role:', roleName);
+
+                if (roleName.toLowerCase() !== 'admin') {
+                    console.log('⚠️ User is not admin, role is:', roleName);
+
+                    const continueAnyway = confirm('Access denied. Admin privileges required.\nCurrent role: ' + roleName + '\n\nDo you want to continue anyway? (For testing only)');
+
+                    if (!continueAnyway) {
+                        window.location.href = '/login';
+                        return;
+                    }
+
+                    console.log('✅ User chose to continue despite insufficient privileges');
+                    return;
+                }
+
+                console.log('✅ Authentication successful, user is admin');
+            } catch (error) {
+                console.error('❌ Error parsing user data:', error);
+                console.log('💡 To test the page, add ?bypass=true to the URL');
+
+                const continueAnyway = confirm('Error reading user data.\n\nDo you want to continue anyway? (For testing only)\n\nOr add ?bypass=true to the URL for easier testing.');
+
+                if (!continueAnyway) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                console.log('✅ User chose to continue despite authentication error');
+            }
+        });
+
+        // Logout function
+        function logout() {
+            // Clear any local storage
+            localStorage.clear();
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Update order status
+        function updateOrderStatus(orderId, currentStatus) {
+            const statuses = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+            const currentIndex = statuses.indexOf(currentStatus);
+            const nextStatus = statuses[currentIndex + 1] || statuses[0];
+
+            if (confirm(`Update order status from ${currentStatus} to ${nextStatus}?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/admin/orders/' + orderId + '/status';
+
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'status';
+                statusInput.value = nextStatus;
+                form.appendChild(statusInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</head>
+
+<body class="min-h-screen bg-gray-100">
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer"
+                    onclick="window.location.href='/admin/dashboard'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro Admin</span>
+                </div>
+                <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                    onclick="logout()">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="admin-sidebar w-64">
+            <div class="p-4">
+                <div class="text-white text-lg font-semibold mb-6">Admin Panel</div>
+                <a href="/admin/dashboard" class="admin-menu">
+                    <i class="fas fa-chart-line mr-3"></i> Dashboard
+                </a>
+                <a href="/admin/products" class="admin-menu">
+                    <i class="fas fa-boxes mr-3"></i> Products
+                </a>
+                <a href="/admin/orders" class="admin-menu active">
+                    <i class="fas fa-shopping-cart mr-3"></i> Orders
+                </a>
+                <a href="#" class="admin-menu">
+                    <i class="fas fa-users mr-3"></i> Users
+                </a>
+                <a href="#" class="admin-menu">
+                    <i class="fas fa-chart-bar mr-3"></i> Reports
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Order Details</h1>
+                    <p class="text-gray-600 mt-2">Order #<span th:text="${order.id}"></span></p>
+                </div>
+                <div class="flex gap-4 no-print">
+                    <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors"
+                        onclick="window.location.href='/admin/orders'">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Orders
+                    </button>
+                    <button th:data-order-id="${order.id}" th:data-order-status="${order.status}"
+                        onclick="updateOrderStatus(this.dataset.orderId, this.dataset.orderStatus)"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-edit mr-2"></i> Update Status
+                    </button>
+                    <button onclick="window.print()"
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-print mr-2"></i> Print
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Order Information -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Customer Information -->
+                    <div class="bg-white rounded-lg shadow p-6 hover-lift">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fas fa-user mr-2 text-blue-600"></i>
+                            Customer Information
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-user-circle text-gray-400 mr-2"></i>
+                                        <p class="text-gray-900 font-medium" th:text="${order.userName}"></p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-envelope text-gray-400 mr-2"></i>
+                                        <p class="text-gray-900" th:text="${order.userEmail}"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-phone text-gray-400 mr-2"></i>
+                                        <p class="text-gray-900"
+                                            th:text="${order.userMobileNumber != null ? order.userMobileNumber : 'Not provided'}">
+                                        </p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer ID</label>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-id-card text-gray-400 mr-2"></i>
+                                        <p class="text-gray-900 font-mono text-sm" th:text="'#' + ${order.id}"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Address -->
+                    <div class="bg-white rounded-lg shadow p-6 hover-lift">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
+                            Delivery Address
+                        </h2>
+                        <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500">
+                            <div class="flex items-start">
+                                <i class="fas fa-home text-gray-400 mr-3 mt-1"></i>
+                                <div>
+                                    <p class="text-gray-900 font-medium" th:text="${order.address}"></p>
+                                    <p class="text-sm text-gray-500 mt-2">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        This address will be used for order delivery
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="bg-white rounded-lg shadow p-6 hover-lift">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fas fa-shopping-bag mr-2 text-blue-600"></i>
+                            Order Items
+                            <span class="ml-2 bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full"
+                                th:text="${order.orderItems != null ? #lists.size(order.orderItems) + ' items' : '0 items'}"></span>
+                        </h2>
+
+                        <!-- Desktop Table View -->
+                        <div class="hidden md:block overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b bg-gray-50">
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Product</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Brand</th>
+                                        <th class="text-center py-3 px-4 font-medium text-gray-700">Quantity</th>
+                                        <th class="text-right py-3 px-4 font-medium text-gray-700">Price</th>
+                                        <th class="text-right py-3 px-4 font-medium text-gray-700">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody th:if="${order.orderItems != null and !order.orderItems.isEmpty()}">
+                                    <tr th:each="item : ${order.orderItems}"
+                                        class="border-b hover:bg-gray-50 transition-colors">
+                                        <td class="py-4 px-4">
+                                            <div class="flex items-center">
+                                                <div class="w-12 h-12 rounded-lg mr-3 overflow-hidden">
+                                                    <img th:if="${item.productImage != null and !item.productImage.isEmpty()}"
+                                                        th:src="${item.productImage}" th:alt="${item.productName}"
+                                                        class="w-full h-full object-cover">
+                                                    <div th:if="${item.productImage == null or item.productImage.isEmpty()}"
+                                                        class="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-box text-gray-500"></i>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="font-medium text-gray-900"
+                                                        th:text="${item.productName}"></div>
+                                                    <div class="text-sm text-gray-500"
+                                                        th:text="'Product ID: ' + ${item.productId}"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-4">
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                                th:text="${item.productBrand}"></span>
+                                        </td>
+                                        <td class="py-4 px-4 text-center">
+                                            <span
+                                                class="inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-sm font-medium"
+                                                th:text="${item.quantity}"></span>
+                                        </td>
+                                        <td class="py-4 px-4 text-right">
+                                            <span class="font-medium">₹<span th:text="${item.price}"></span></span>
+                                        </td>
+                                        <td class="py-4 px-4 text-right">
+                                            <span class="font-semibold text-green-600">₹<span
+                                                    th:text="${item.subtotal}"></span></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div th:if="${order.orderItems == null or order.orderItems.isEmpty()}"
+                                class="text-center py-8 text-gray-500">
+                                <i class="fas fa-box-open text-4xl mb-2"></i>
+                                <p>No items found in this order</p>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Card View -->
+                        <div class="md:hidden space-y-4"
+                            th:if="${order.orderItems != null and !order.orderItems.isEmpty()}">
+                            <div th:each="item : ${order.orderItems}" class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 rounded-lg mr-3 overflow-hidden">
+                                            <img th:if="${item.productImage != null and !item.productImage.isEmpty()}"
+                                                th:src="${item.productImage}" th:alt="${item.productName}"
+                                                class="w-full h-full object-cover">
+                                            <div th:if="${item.productImage == null or item.productImage.isEmpty()}"
+                                                class="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-box text-gray-500"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-gray-900" th:text="${item.productName}"></div>
+                                            <div class="text-sm text-gray-500" th:text="${item.productBrand}"></div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-semibold text-green-600">₹<span
+                                                th:text="${item.subtotal}"></span></div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <div class="flex items-center">
+                                        <span class="text-gray-500 mr-2">Quantity:</span>
+                                        <span
+                                            class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 rounded-full text-xs font-medium"
+                                            th:text="${item.quantity}"></span>
+                                    </div>
+                                    <div class="text-gray-500">
+                                        ₹<span th:text="${item.price}"></span> each
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md:hidden" th:if="${order.orderItems == null or order.orderItems.isEmpty()}">
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-box-open text-4xl mb-2"></i>
+                                <p>No items found in this order</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="space-y-6">
+                    <!-- Order Status & Timeline -->
+                    <div class="bg-white rounded-lg shadow p-6 hover-lift">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fas fa-clipboard-check mr-2 text-blue-600"></i>
+                            Order Status & Timeline
+                        </h2>
+                        <div class="text-center mb-6">
+                            <span
+                                th:class="'status-badge status-' + ${order.status != null ? #strings.toLowerCase(order.status.toString()) : 'unknown'}"
+                                th:text="${order.status != null ? order.status : 'UNKNOWN'}"></span>
+                        </div>
+
+                        <!-- Order Timeline -->
+                        <div class="space-y-4">
+                            <h3 class="font-medium text-gray-700 mb-3">Order Timeline</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-900">Order Placed</div>
+                                        <div class="text-xs text-gray-500" th:text="${order.orderDateDisplay}"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center"
+                                    th:if="${order.status != null and (order.status.toString() == 'CONFIRMED' or order.status.toString() == 'SHIPPED' or order.status.toString() == 'DELIVERED')}">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-900">Order Confirmed</div>
+                                        <div class="text-xs text-gray-500">Processing your order</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center"
+                                    th:if="${order.status != null and (order.status.toString() == 'SHIPPED' or order.status.toString() == 'DELIVERED')}">
+                                    <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-900">Order Shipped</div>
+                                        <div class="text-xs text-gray-500">On its way to you</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center"
+                                    th:if="${order.status != null and order.status.toString() == 'DELIVERED'}">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-900">Order Delivered</div>
+                                        <div class="text-xs text-gray-500" th:text="${order.deliveryDateDisplay}"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center"
+                                    th:if="${order.status != null and order.status.toString() == 'CANCELLED'}">
+                                    <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-900">Order Cancelled</div>
+                                        <div class="text-xs text-gray-500">Order has been cancelled</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="bg-white rounded-lg shadow p-6 hover-lift">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fas fa-receipt mr-2 text-blue-600"></i>
+                            Order Summary
+                        </h2>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600 flex items-center">
+                                    <i class="fas fa-shopping-cart mr-2 text-gray-400"></i>
+                                    Subtotal (<span
+                                        th:text="${order.orderItems != null ? #lists.size(order.orderItems) : 0}"></span>
+                                    items):
+                                </span>
+                                <span class="font-medium">₹<span th:text="${order.totalAmount}"></span></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-600 flex items-center">
+                                    <i class="fas fa-truck mr-2 text-gray-400"></i>
+                                    Delivery Charge:
+                                </span>
+                                <span class="font-medium">₹<span th:text="${order.deliveryCharge}"></span></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2" th:if="${order.discountAmount > 0}">
+                                <span class="text-gray-600 flex items-center">
+                                    <i class="fas fa-percentage mr-2 text-green-500"></i>
+                                    Discount:
+                                </span>
+                                <span class="text-green-600 font-medium">-₹<span
+                                        th:text="${order.discountAmount}"></span></span>
+                            </div>
+                            <hr class="my-4">
+                            <div class="flex justify-between items-center py-3 bg-blue-50 rounded-lg px-4">
+                                <span class="font-semibold text-lg text-gray-800 flex items-center">
+                                    <i class="fas fa-rupee-sign mr-2"></i>
+                                    Total Amount:
+                                </span>
+                                <span class="font-bold text-xl text-blue-600">₹<span
+                                        th:text="${order.finalAmount}"></span></span>
+                            </div>
+                            <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    <span>Payment completed at order placement</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-lg shadow p-6 hover-lift">
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fas fa-bolt mr-2 text-blue-600"></i>
+                            Quick Actions
+                        </h2>
+                        <div class="space-y-3">
+                            <button th:data-order-id="${order.id}" th:data-order-status="${order.status}"
+                                onclick="updateOrderStatus(this.dataset.orderId, this.dataset.orderStatus)"
+                                class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+                                <i class="fas fa-edit mr-2"></i>
+                                Update Order Status
+                            </button>
+                            <a href="mailto:"
+                                th:href="'mailto:' + ${order.userEmail} + '?subject=Order #' + ${order.id} + ' Update'"
+                                class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
+                                <i class="fas fa-envelope mr-2"></i>
+                                Email Customer
+                            </a>
+                            <button onclick="window.location.href='/admin/orders'"
+                                class="w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center">
+                                <i class="fas fa-list mr-2"></i>
+                                View All Orders
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

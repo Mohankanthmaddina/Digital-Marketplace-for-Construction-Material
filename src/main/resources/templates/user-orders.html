@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro</span>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/homepage" class="text-gray-700 hover:text-blue-600 transition-colors">Home</a>
+                    <a href="/categories/view"
+                        class="text-gray-700 hover:text-blue-600 transition-colors">Categories</a>
+                    <a href="/products/view" class="text-gray-700 hover:text-blue-600 transition-colors">Products</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="relative cursor-pointer" onclick="goToCart()">
+                        <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+                        <span class="cart-badge" id="cart-count">0</span>
+                    </div>
+                    <div class="relative">
+                        <button class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                            onclick="toggleProfileMenu()">
+                            <i class="fas fa-user-circle text-2xl"></i>
+                            <span class="hidden md:block" th:if="${user != null}" th:text="${user.name}">User</span>
+                            <span class="hidden md:block" th:if="${user == null}">Account</span>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </button>
+                        <div id="profile-menu"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <a href="#" onclick="openMyProfile()"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i> My Profile
+                            </a>
+                            <a href="#" onclick="openMyOrders()" class="block px-4 py-2 text-blue-600 bg-blue-50">
+                                <i class="fas fa-shopping-bag mr-2"></i> My Orders
+                            </a>
+                            <a href="#" onclick="openEditProfile()"
+                                class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-edit mr-2"></i> Edit Profile
+                            </a>
+                            <hr class="my-2">
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-red-600 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto my-12 px-4">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">My Orders</h1>
+            <a href="/products/view"
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-shopping-bag mr-2"></i> Continue Shopping
+            </a>
+        </div>
+
+        <!-- Orders List (desktop) -->
+        <div th:if="${orders.empty}" class="text-center py-12">
+            <div class="bg-white rounded-lg shadow p-8">
+                <i class="fas fa-shopping-bag text-6xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">No Orders Yet</h3>
+                <p class="text-gray-500 mb-6">You haven't placed any orders yet. Start shopping to see your orders here.
+                </p>
+                <a href="/products/view"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    Start Shopping
+                </a>
+            </div>
+        </div>
+
+        <div th:if="${!orders.empty}" class="hidden md:block space-y-6">
+            <div th:each="order : ${orders}" class="bg-white rounded-lg shadow">
+                <!-- Order Header -->
+                <div class="p-6 border-b">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold" th:text="${order.orderNumber}">ORD-123456</h3>
+                            <p class="text-sm text-gray-600"
+                                th:text="'Ordered on ' + ${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">
+                                Ordered on 01/01/2024 12:00</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-semibold text-green-600"
+                                th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">₹1,000.00</p>
+                            <span th:class="${order.status.name() == 'DELIVERED' ? 'bg-green-100 text-green-800' : 
+                                          order.status.name() == 'CANCELLED' ? 'bg-red-100 text-red-800' : 
+                                          order.status.name() == 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                          'bg-blue-100 text-blue-800'}"
+                                class="px-3 py-1 rounded-full text-sm font-semibold"
+                                th:text="${order.status}">Confirmed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="p-6">
+                    <h4 class="font-semibold mb-4">Order Items</h4>
+                    <div class="space-y-3">
+                        <div th:each="item : ${order.orderItems}"
+                            class="flex items-center space-x-4 py-3 border-b last:border-b-0">
+                            <img th:src="${item.product.imageUrl}" alt="Product" class="w-16 h-16 object-cover rounded">
+                            <div class="flex-1">
+                                <h5 class="font-medium" th:text="${item.product.name}">Product Name</h5>
+                                <p class="text-sm text-gray-600" th:text="'Brand: ' + ${item.product.brand}">Brand:
+                                    Example Brand</p>
+                                <p class="text-sm text-gray-600" th:text="'Quantity: ' + ${item.quantity}">Quantity: 2
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold" th:text="'₹' + ${#numbers.formatDecimal(item.price, 1, 2)}">
+                                    ₹500.00</p>
+                                <p class="text-sm text-gray-600"
+                                    th:text="'Total: ₹' + ${#numbers.formatDecimal(item.quantity * item.price, 1, 2)}">
+                                    Total: ₹1,000.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Footer -->
+                <div class="p-6 bg-gray-50 rounded-b-lg">
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm text-gray-600">
+                            <p th:text="'Payment Method: ' + ${order.paymentMethod}">Payment Method: PhonePe</p>
+                            <p th:text="'Payment ID: ' + ${order.paymentId}">Payment ID: PAY_123456</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button th:onclick="'viewOrderDetails(' + ${order.id} + ')'"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                <i class="fas fa-eye mr-1"></i> View Details
+                            </button>
+                            <button th:if="${order.status.name() == 'DELIVERED'}"
+                                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                <i class="fas fa-redo mr-1"></i> Reorder
+                            </button>
+                            <button th:if="${order.status.name() == 'PENDING' || order.status.name() == 'CONFIRMED'}"
+                                th:onclick="'cancelOrder(' + ${order.id} + ')'"
+                                class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm">
+                                <i class="fas fa-times mr-1"></i> Cancel Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Cards (mobile) -->
+        <div th:if="${!orders.empty}" class="md:hidden space-y-4">
+            <div th:each="order : ${orders}" class="bg-white rounded-lg shadow p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <div class="font-semibold" th:text="${order.orderNumber}">ORD-123</div>
+                        <div class="text-sm text-gray-500"
+                            th:text="'Ordered on ' + ${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></div>
+                    </div>
+                    <span
+                        th:class="${order.status.name() == 'DELIVERED' ? 'bg-green-100 text-green-800' : order.status.name() == 'CANCELLED' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}"
+                        class="px-2 py-1 rounded-full text-xs font-semibold" th:text="${order.status}">Status</span>
+                </div>
+                <div class="text-right font-semibold text-green-600 mb-3"
+                    th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">₹0.00</div>
+                <div class="space-y-2">
+                    <div th:each="item : ${order.orderItems}" class="flex justify-between text-sm">
+                        <span th:text="${item.product.name}">Item</span>
+                        <span th:text="${item.quantity} + ' x ₹' + ${#numbers.formatDecimal(item.price, 1, 2)}">1 x
+                            ₹0.00</span>
+                    </div>
+                </div>
+                <div class="mt-4 flex space-x-2">
+                    <button th:onclick="'viewOrderDetails(' + ${order.id} + ')'"
+                        class="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-xs font-semibold hover:bg-blue-700 text-center">
+                        <i class="fas fa-eye mr-1"></i> Details
+                    </button>
+                    <button th:if="${order.status.name() == 'PENDING' || order.status.name() == 'CONFIRMED'}"
+                        th:onclick="'cancelOrder(' + ${order.id} + ')'"
+                        class="flex-1 bg-red-600 text-white px-3 py-2 rounded text-xs font-semibold hover:bg-red-700 text-center">
+                        <i class="fas fa-times mr-1"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Auto-redirect to include userId when missing
+        const hasUserOrdersUser = [[${ user != null}]];
+        if (!hasUserOrdersUser) {
+            const id = localStorage.getItem('currentUserId');
+            if (id) {
+                const u = new URL(window.location.href);
+                if (!u.searchParams.get('userId')) {
+                    window.location.replace('/profile/orders?userId=' + id);
+                }
+            }
+        }
+
+        function currentUserId() { return localStorage.getItem('currentUserId'); }
+        function openMyProfile() { const id = currentUserId(); if (!id) return; window.location.href = '/profile?userId=' + id; }
+        function openMyOrders() { const id = currentUserId(); if (!id) return; window.location.href = '/profile/orders?userId=' + id; }
+        function openEditProfile() { const id = currentUserId(); if (!id) return; window.location.href = '/profile/edit?userId=' + id; }
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function goToCart() {
+            const userId = localStorage.getItem("currentUserId");
+            if (!userId) {
+                if (typeof showInfo !== 'undefined') showInfo("Please login first to view your cart!", "Alert");
+                else alert("Please login first to view your cart!");
+                window.location.href = "/login";
+                return;
+            }
+            window.location.href = `/cart/view?userId=${userId}`;
+        }
+
+        function viewOrderDetails(orderId) {
+            const userId = currentUserId();
+            if (!userId) {
+                if (typeof showError !== 'undefined') showError("Please login first.", "Error");
+                else alert("Please login first.");
+                return;
+            }
+            window.location.href = `/profile/orders/invoice/${orderId}?userId=${userId}`;
+        }
+
+        async function cancelOrder(orderId) {
+            if (!confirm('Are you sure you want to cancel this order?')) {
+                return;
+            }
+            const userId = currentUserId();
+            if (!userId) {
+                if (typeof showError !== 'undefined') showError("Please login first.", "Error");
+                else alert("Please login first.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/orders/${orderId}/cancel?userId=${userId}`, {
+                    method: 'PUT'
+                });
+
+                if (response.ok) {
+                    if (typeof showSuccess !== 'undefined') showSuccess("Order cancelled successfully.", "Success");
+                    else alert("Order cancelled successfully.");
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    const message = await response.text();
+                    if (typeof showError !== 'undefined') showError("Failed to cancel order: " + message, "Error");
+                    else alert("Failed to cancel order: " + message);
+                }
+            } catch (error) {
+                console.error(error);
+                if (typeof showError !== 'undefined') showError("An error occurred while cancelling the order.", "Error");
+                else alert("An error occurred while cancelling the order.");
+            }
+        }
+
+        function logout() {
+            // Clear local storage
+            localStorage.clear();
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('profile-menu');
+            const button = event.target.closest('button');
+            if (!button || !button.onclick || button.onclick.toString().indexOf('toggleProfileMenu') === -1) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Initialize
+        updateCartCount();
+    </script>
+
+</body>
+
+</html>

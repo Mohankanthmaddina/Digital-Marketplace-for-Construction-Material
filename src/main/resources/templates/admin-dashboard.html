@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/css/professional-alerts.css">
+    <script src="/js/professional-alerts.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BuildPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-sidebar {
+            min-height: calc(100vh - 80px);
+            background: #1f2937;
+        }
+
+        .admin-menu {
+            color: white;
+            padding: 12px 20px;
+            display: block;
+            transition: background 0.3s;
+        }
+
+        .admin-menu:hover,
+        .admin-menu.active {
+            background: #374151;
+        }
+
+        .role-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .users-section {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-100">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg py-4">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="window.location.href='/'">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-blue-600">BuildPro Admin</span>
+                </div>
+                <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                    onclick="logout()">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed top-4 right-4 z-50 hidden">
+        <div id="notification-content" class="bg-white rounded-lg shadow-lg p-4 max-w-sm">
+            <div class="flex items-center">
+                <div id="notification-icon" class="flex-shrink-0 mr-3">
+                    <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <p id="notification-message" class="text-sm font-medium text-gray-900"></p>
+                </div>
+                <button onclick="hideNotification()" class="ml-3 text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="admin-sidebar w-64">
+            <div class="p-4">
+                <div class="text-white text-lg font-semibold mb-6">Admin Panel</div>
+                <a href="/admin/dashboard" class="admin-menu active">
+                    <i class="fas fa-chart-line mr-3"></i> Dashboard
+                </a>
+                <a href="/admin/products" class="admin-menu">
+                    <i class="fas fa-boxes mr-3"></i> Products
+                </a>
+                <a href="/admin/categories" class="admin-menu">
+                    <i class="fas fa-tags mr-3"></i> Categories
+                </a>
+                <a href="/admin/orders" class="admin-menu">
+                    <i class="fas fa-shopping-cart mr-3"></i> Orders
+                </a>
+                <a onclick="showUsersSection()" class="admin-menu">
+                    <i class="fas fa-users mr-3"></i> Users
+                </a>
+                <a href="/admin/reports" class="admin-menu">
+                    <i class="fas fa-chart-bar mr-3"></i> Reports
+                </a>
+                <hr class="my-4 border-gray-600">
+                <a href="#" onclick="openAdminProfile()" class="admin-menu">
+                    <i class="fas fa-user-circle mr-3"></i> My Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <!-- Success Message -->
+            <div th:if="${param.success}"
+                class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span th:text="${param.success}"></span>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${param.error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span th:text="${param.error}"></span>
+            </div>
+
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+                <button
+                    class="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-lg"
+                    onclick="window.location.href='products/add'">
+                    <i class="fas fa-plus-circle"></i>
+                    Add New Product
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Total Orders</p>
+                            <p class="text-2xl font-bold" id="total-orders">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-boxes text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Total Products</p>
+                            <p class="text-2xl font-bold" id="total-products">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-users text-purple-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Total Users</p>
+                            <p class="text-2xl font-bold" id="total-users">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-rupee-sign text-orange-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Total Revenue</p>
+                            <p class="text-2xl font-bold" id="total-revenue">₹0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Management Section (Hidden by default) -->
+            <div id="users-section" class="hidden mb-8 users-section">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-semibold text-gray-800">User Management</h2>
+                        <button class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                            onclick="hideUsersSection()">
+                            <i class="fas fa-times mr-2"></i> Close
+                        </button>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200" id="users-table-body">
+                                <tr>
+                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                        Loading users...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold mb-4">Recent Orders</h2>
+                    <div class="space-y-3" id="recent-orders"></div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+                    <div class="space-y-3">
+                        <button
+                            class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                            onclick="window.location.href='products'">
+                            <i class="fas fa-boxes mr-2"></i> Manage Products
+                        </button>
+                        <button
+                            class="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors"
+                            onclick="window.location.href='products/add'">
+                            <i class="fas fa-plus-circle mr-2"></i> Add New Product
+                        </button>
+                        <button
+                            class="w-full bg-amber-600 text-white py-3 rounded-lg hover:bg-amber-700 transition-colors"
+                            onclick="window.location.href='categories'">
+                            <i class="fas fa-tags mr-2"></i> Manage Categories
+                        </button>
+                        <button
+                            class="w-full bg-amber-600 text-white py-3 rounded-lg hover:bg-amber-700 transition-colors"
+                            onclick="window.location.href='products'">
+                            <i class="fas fa-edit mr-2"></i> Edit Products
+                        </button>
+                        <button
+                            class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                            onclick="window.location.href='orders'">
+                            <i class="fas fa-shopping-cart mr-2"></i> View Orders
+                        </button>
+                        <button
+                            class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                            onclick="showUsersSection()">
+                            <i class="fas fa-users mr-2"></i> Manage Users
+
+                        </button>
+                        <button
+                            class="w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition-colors"
+                            onclick="window.location.href='reports'">
+                            <i class="fas fa-chart-bar mr-2"></i> Generate Reports
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900">Toggle User Verification</h3>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="edit-user-form" class="p-6">
+                    <input type="hidden" id="edit-user-id" name="userId">
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">User Name</label>
+                        <input type="text" id="edit-user-name" name="name"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100" readonly>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="edit-user-email" name="email"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100" readonly>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="edit-user-verified" name="isVerified"
+                                class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                            <span class="ml-2 text-sm text-gray-700">User is verified</span>
+                        </label>
+                    </div>
+
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="closeEditModal()"
+                            class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                            Update Verification
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load dashboard stats from server
+        document.addEventListener("DOMContentLoaded", () => {
+            loadDashboardData();
+            handleURLParameters();
+        });
+
+        // Handle URL parameters for success/error messages
+        function handleURLParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+            const error = urlParams.get('error');
+
+            if (success) {
+                showNotification(success, 'success');
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (error) {
+                showNotification(error, 'error');
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            const notificationContent = document.getElementById('notification-content');
+            const notificationIcon = document.getElementById('notification-icon');
+            const notificationMessage = document.getElementById('notification-message');
+
+            notificationMessage.textContent = message;
+
+            if (type === 'success') {
+                notificationIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 text-xl"></i>';
+                notificationContent.className = 'bg-white rounded-lg shadow-lg p-4 max-w-sm border-l-4 border-green-500';
+            } else if (type === 'error') {
+                notificationIcon.innerHTML = '<i class="fas fa-exclamation-circle text-red-500 text-xl"></i>';
+                notificationContent.className = 'bg-white rounded-lg shadow-lg p-4 max-w-sm border-l-4 border-red-500';
+            }
+
+            notification.classList.remove('hidden');
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideNotification();
+            }, 5000);
+        }
+
+        // Hide notification
+        function hideNotification() {
+            document.getElementById('notification').classList.add('hidden');
+        }
+
+        // Load dashboard stats
+        function loadDashboardData() {
+            fetch('/admin/dashboard/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('total-orders').textContent = data.totalOrders || 0;
+                    document.getElementById('total-products').textContent = data.totalProducts || 0;
+                    document.getElementById('total-users').textContent = data.totalUsers || 0;
+                    document.getElementById('total-revenue').textContent = `₹${data.totalRevenue || 0}`;
+
+                    // Render recent orders (last 5)
+                    const recent = data.recentOrdersList || [];
+                    const container = document.getElementById('recent-orders');
+                    if (recent.length === 0) {
+                        container.innerHTML = '<p class="text-gray-500 text-center py-4">No recent orders</p>';
+                    } else {
+                        container.innerHTML = recent.map(o => `
+                            <div class="flex justify-between items-center p-3 border rounded">
+                                <div>
+                                    <div class="font-semibold">#${o.id} • ${o.userName || '-'} </div>
+                                    <div class="text-xs text-gray-500">${o.orderDate || ''}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-semibold">₹${o.finalAmount}</div>
+                                    <span class="px-2 py-1 text-xs rounded-full bg-gray-100">${o.status}</span>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading dashboard data:', error);
+                    // Fallback to default values
+                    document.getElementById('total-orders').textContent = '0';
+                    document.getElementById('total-products').textContent = '0';
+                    document.getElementById('total-users').textContent = '0';
+                    document.getElementById('total-revenue').textContent = '₹0';
+                });
+        }
+
+        // Show users section and load users
+        function showUsersSection() {
+            const usersSection = document.getElementById('users-section');
+            usersSection.classList.remove('hidden');
+            loadUsers();
+        }
+
+        // Hide users section
+        function hideUsersSection() {
+            const usersSection = document.getElementById('users-section');
+            usersSection.classList.add('hidden');
+        }
+
+        // Load users from User model
+        function loadUsers() {
+            const tableBody = document.getElementById('users-table-body');
+            tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Loading users...</td></tr>';
+
+            fetch('/admin/users/api')
+                .then(response => response.json())
+                .then(users => {
+                    if (users.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">No users found.</td></tr>';
+                        return;
+                    }
+
+                    tableBody.innerHTML = users.map(user => `
+                        <tr>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                        <i class="fas fa-user text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">${user.name}</div>
+                                        <div class="text-sm text-gray-500">ID: ${user.id}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">${user.email}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${user.role === 'ADMIN' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}">
+                                    ${user.role}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${user.isVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                    ${user.isVerified ? 'Verified' : 'Unverified'}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">${user.createdAtDisplay || 'N/A'}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex gap-2">
+                                    <button onclick="editUser(${user.id}, '${user.name}', '${user.email}', ${user.isVerified})" 
+                                            class="text-blue-600 hover:text-blue-800 text-sm">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error loading users:', error);
+                    tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Error loading users. Please try again.</td></tr>';
+                });
+        }
+
+        // Edit user function
+        function editUser(userId, userName, userEmail, isVerified) {
+            console.log('Edit user called with:', { userId, userName, userEmail, isVerified });
+
+            document.getElementById('edit-user-id').value = userId;
+            document.getElementById('edit-user-name').value = userName;
+            document.getElementById('edit-user-email').value = userEmail;
+            document.getElementById('edit-user-verified').checked = isVerified;
+
+            console.log('Form values set - User ID:', document.getElementById('edit-user-id').value,
+                'Verified:', document.getElementById('edit-user-verified').checked);
+
+            document.getElementById('edit-user-modal').classList.remove('hidden');
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('edit-user-modal').classList.add('hidden');
+        }
+
+        // Handle edit form submission
+        document.getElementById('edit-user-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const userId = document.getElementById('edit-user-id').value;
+            const isVerified = document.getElementById('edit-user-verified').checked;
+
+            console.log('Form submission - User ID:', userId, 'Verified:', isVerified);
+
+            if (!userId) {
+                showInfo('User ID is missing!', 'Alert');
+                return;
+            }
+
+            // Create form for submission
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/users/' + userId + '/verification';
+
+            console.log('Form action:', form.action);
+
+            // Add verification status
+            const statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'isVerified';
+            statusInput.value = isVerified.toString();
+            form.appendChild(statusInput);
+
+            console.log('Submitting form with isVerified:', statusInput.value);
+
+            document.body.appendChild(form);
+            form.submit();
+        });
+
+
+        // Admin Profile function
+        function openAdminProfile() {
+            const adminId = localStorage.getItem('currentUserId');
+            if (!adminId) {
+                showError('Admin not identified. Please login again.', 'Error');
+                return;
+            }
+            window.location.href = '/admin/profile?adminId=' + adminId;
+        }
+
+        // Logout function
+        function logout() {
+            // Clear any local storage
+            localStorage.clear();
+
+            // Create a form to submit POST request for logout
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/logout';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+</body>
+
+</html>
