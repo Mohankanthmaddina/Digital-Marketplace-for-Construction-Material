@@ -27,6 +27,19 @@ public class LogoutController {
             SecurityContextHolder.clearContext();
         }
 
+        // Clear JWT cookies
+        jakarta.servlet.http.Cookie jwtCookie = new jakarta.servlet.http.Cookie("authToken", null);
+        jwtCookie.setPath("/");
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setMaxAge(0);
+        response.addCookie(jwtCookie);
+
+        jakarta.servlet.http.Cookie refreshCookie = new jakarta.servlet.http.Cookie("refreshToken", null);
+        refreshCookie.setPath("/");
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setMaxAge(0);
+        response.addCookie(refreshCookie);
+
         // Clear cookies
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         response.setHeader("Pragma", "no-cache");

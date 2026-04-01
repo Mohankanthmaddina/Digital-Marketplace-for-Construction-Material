@@ -10,6 +10,18 @@
     <title>User Dashboard - BuildPro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Enforce strict client-side checks to beat Back-Forward Cache
+        window.onpageshow = function(event) {
+            if (event.persisted || !localStorage.getItem('currentUserId')) {
+                window.location.href = '/login';
+            }
+        };
+        // Run immediately if loaded from memory
+        if (!localStorage.getItem('currentUserId')) {
+            window.location.href = '/login';
+        }
+    </script>
     <style>
         .success-animation {
             animation: successPulse 2s ease-in-out infinite;
