@@ -35,7 +35,12 @@ public class AuthController {
      * Basic email format validation (fallback)
      */
     private boolean isValidEmailFormat(String email) {
-        return email != null && email.contains("@") && email.contains(".") && email.length() > 5;
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        String lowerEmail = email.toLowerCase().trim();
+        String regex = "^[a-zA-Z0-9._%+-]+@(gmail\\.com|yahoo\\.com|outlook\\.com|hotmail\\.com)$";
+        return lowerEmail.matches(regex);
     }
 
     @Autowired

@@ -175,6 +175,87 @@
             console.log('Debugging order details for ID:', orderId);
             testOrderDetails(orderId);
         }
+
+        // Advanced filter and sort for orders
+        function applyOrderFilters() {
+            const searchInput = document.getElementById('searchOrderInput').value.toLowerCase();
+            const sortSelection = document.getElementById('sortOrderSelect').value;
+            const dateFilter = document.getElementById('dateFilterInput').value;
+            const statusFilter = document.getElementById('statusFilter').value.toUpperCase();
+
+            // Function to process a container of items (rows or cards)
+            function processContainer(itemsClass, parentQuery) {
+                const items = Array.from(document.querySelectorAll(itemsClass));
+                const parent = document.querySelector(parentQuery);
+                if (!items.length || !parent) return;
+
+                // First, apply filters
+                let visibleItems = items.filter(item => {
+                    const searchData = (item.getAttribute('data-search') || '').toLowerCase();
+                    const statusData = (item.getAttribute('data-status') || '').toUpperCase();
+                    const dateData = item.getAttribute('data-date') || '';
+                    
+                    const matchesSearch = !searchInput || searchData.includes(searchInput);
+                    const matchesStatus = !statusFilter || statusData === statusFilter;
+                    const matchesDate = !dateFilter || dateData === dateFilter;
+
+                    if (matchesSearch && matchesStatus && matchesDate) {
+                        item.style.display = '';
+                        return true;
+                    } else {
+                        item.style.display = 'none';
+                        return false;
+                    }
+                });
+
+                // Now sort visible items
+                visibleItems.sort((a, b) => {
+                    if (sortSelection === 'price_highest' || sortSelection === 'price_lowest') {
+                        const priceA = parseFloat(a.getAttribute('data-price') || 0);
+                        const priceB = parseFloat(b.getAttribute('data-price') || 0);
+                        return sortSelection === 'price_highest' ? priceB - priceA : priceA - priceB;
+                    } else {
+                        // date sorting (recent or oldest)
+                        const rawA = a.getAttribute('data-timestamp') || '';
+                        const rawB = b.getAttribute('data-timestamp') || '';
+                        if (sortSelection === 'oldest') {
+                            return rawA.localeCompare(rawB); // older string comes first
+                        } else {
+                            return rawB.localeCompare(rawA); // newer string comes first
+                        }
+                    }
+                });
+
+                // Re-append to DOM in sorted order
+                visibleItems.forEach(item => parent.appendChild(item));
+            }
+
+            // Apply to Desktop Table
+            processContainer('tr.order-item-row', 'tbody.divide-y');
+            
+            // Apply to Mobile Cards
+            processContainer('div.order-item-card', '.md\\:hidden.space-y-4');
+        }
+
+        function clearOrderFilters() {
+            document.getElementById('searchOrderInput').value = '';
+            document.getElementById('sortOrderSelect').value = 'recent';
+            document.getElementById('dateFilterInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            applyOrderFilters();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(calculateOrderStats, 1000);
+
+            const searchInput = document.getElementById('searchOrderInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', applyOrderFilters);
+                document.getElementById('sortOrderSelect').addEventListener('change', applyOrderFilters);
+                document.getElementById('dateFilterInput').addEventListener('change', applyOrderFilters);
+                document.getElementById('statusFilter').addEventListener('change', applyOrderFilters);
+            }
+        });
     </script>
 </head>
 
@@ -248,6 +329,44 @@
                 </div>
             </div>
 
+            <!-- Advanced Filters -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Search -->
+                    <div class="relative">
+                        <input type="text" id="searchOrderInput" placeholder="Search by Order ID or Customer..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <!-- Sort By -->
+                    <div>
+                        <select id="sortOrderSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="recent">Recent Orders (Default)</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="price_highest">Highest Price</option>
+                            <option value="price_lowest">Lowest Price</option>
+                        </select>
+                    </div>
+                    <!-- Date Filter -->
+                    <div>
+                        <input type="date" id="dateFilterInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" title="Filter by selected date">
+                    </div>
+                    <!-- Status Filter -->
+                    <div class="flex gap-2">
+                        <select id="statusFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All Statuses</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="CONFIRMED">Confirmed</option>
+                            <option value="SHIPPED">Shipped</option>
+                            <option value="DELIVERED">Delivered</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                        <button onclick="clearOrderFilters()" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Orders Table (desktop) -->
             <div class="hidden md:block bg-white rounded-lg shadow overflow-hidden">
                 <div class="overflow-x-auto">
@@ -271,7 +390,14 @@
                                     No orders found.
                                 </td>
                             </tr>
-                            <tr th:each="order : ${orders}" th:if="${orders != null and !#lists.isEmpty(orders)}">
+                            <tr th:each="order : ${orders}" th:if="${orders != null and !#lists.isEmpty(orders)}"
+                                class="order-item-row"
+                                th:data-order-id="${order.id}"
+                                th:data-price="${order.finalAmount != null ? order.finalAmount : 0}"
+                                th:data-status="${order.status}"
+                                th:data-search="${#strings.toLowerCase(order.id + ' ' + order.userName + ' ' + (order.userEmail != null ? order.userEmail : ''))}"
+                                th:data-date="${order.orderDate != null ? #temporals.format(order.orderDate, 'yyyy-MM-dd') : ''}"
+                                th:data-timestamp="${order.orderDate != null ? order.orderDate : ''}">
                                 <td class="px-6 py-4">
                                     <div class="font-medium text-blue-600">#<span th:text="${order.id}"></span></div>
                                 </td>
@@ -357,7 +483,13 @@
                     No orders found.
                 </div>
                 <div th:each="order : ${orders}" th:if="${orders != null and !#lists.isEmpty(orders)}"
-                    class="bg-white rounded-lg shadow p-4">
+                    class="bg-white rounded-lg shadow p-4 order-item-card"
+                    th:data-order-id="${order.id}"
+                    th:data-price="${order.finalAmount != null ? order.finalAmount : 0}"
+                    th:data-status="${order.status}"
+                    th:data-search="${#strings.toLowerCase(order.id + ' ' + order.userName + ' ' + (order.userEmail != null ? order.userEmail : ''))}"
+                    th:data-date="${order.orderDate != null ? #temporals.format(order.orderDate, 'yyyy-MM-dd') : ''}"
+                    th:data-timestamp="${order.orderDate != null ? order.orderDate : ''}">
                     <div class="flex justify-between items-start mb-2">
                         <div>
                             <div class="font-semibold text-blue-600">#<span th:text="${order.id}"></span></div>

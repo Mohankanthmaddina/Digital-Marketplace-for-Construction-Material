@@ -955,6 +955,22 @@
             const password = e.target[1].value;
             const role = loginType.toUpperCase();
 
+            // Dynamic Email Validation
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(email)) {
+                showError("Please enter a valid email address.", 'Invalid Email Format');
+                return;
+            }
+            
+            const lowerEmail = email.toLowerCase();
+            const allowedDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
+            const domain = lowerEmail.split('@')[1];
+            
+            if (!allowedDomains.includes(domain)) {
+                showError("Please use a standard personal email provider (e.g., gmail.com, yahoo.com). Institutional or temporary emails are not allowed.", 'Invalid Email Provider');
+                return;
+            }
+
             const loadingId = showLoadingState('Signing you in…');
 
             try {

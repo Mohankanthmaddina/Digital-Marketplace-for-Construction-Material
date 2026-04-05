@@ -57,6 +57,7 @@ public class AdminController {
     @GetMapping("/products")
     public String getProducts(Model model) {
         model.addAttribute("products", productService.getAllProductsDTO()); // send DTOs
+        model.addAttribute("categories", productService.getAllCategories()); // add categories
         return "admin-products"; // Thymeleaf template
     }
 

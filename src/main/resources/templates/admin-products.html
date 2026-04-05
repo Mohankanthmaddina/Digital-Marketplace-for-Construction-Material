@@ -210,11 +210,7 @@
                         <select id="categoryFilter"
                             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">All Categories</option>
-                            <option value="Fishes">Fishes</option>
-                            <option value="prawns">Prawns</option>
-                            <option value="Tiger Prawns">Tiger Prawns</option>
-                            <option value="Dry Fishes">Dry Fishes</option>
-
+                            <option th:each="cat : ${categories}" th:value="${cat.name}" th:text="${cat.name}"></option>
                         </select>
                         <button onclick="clearFilters()"
                             class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
