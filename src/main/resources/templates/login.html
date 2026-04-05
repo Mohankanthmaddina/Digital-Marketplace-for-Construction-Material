@@ -997,8 +997,8 @@
                         document.cookie = `authToken=${data.token}; path=/; SameSite=Strict`;
                     }
 
-                    // ✅ Show beautiful JWT panel & auto-redirect
-                    showJwtPanel(data);
+                    // ✅ Redirect immediately
+                    window.location.href = data.redirectUrl;
 
                 } else {
                     hideLoadingState(loadingId);

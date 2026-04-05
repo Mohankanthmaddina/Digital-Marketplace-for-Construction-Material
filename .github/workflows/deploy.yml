@@ -82,4 +82,8 @@ jobs:
         API_DOCS_PATH: ${{ secrets.API_DOCS_PATH }}
         SWAGGER_UI_PATH: ${{ secrets.SWAGGER_UI_PATH }}
         SWAGGER_TAG_SORTER: ${{ secrets.SWAGGER_TAG_SORTER }}
+<<<<<<< HEAD
         SWAGGER_OPERATION_SORTER: ${{ secrets.SWAGGER_OPERATION_SORTER }}
+=======
+        SWAGGER_OPERATION_SORTER: ${{ secrets.SWAGGER_OPERATION_SORTER }}
+>>>>>>> 2951876 (updated admin security)

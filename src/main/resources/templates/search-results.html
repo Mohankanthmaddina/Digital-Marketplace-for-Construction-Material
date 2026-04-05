@@ -361,20 +361,40 @@
                 </div>
             </div>
 
-            <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold gradient-text">
-                    Search Results for "<span th:text="${query}"></span>"
-                </h1>
-                <p class="text-gray-600">
-                    <span class="font-semibold" th:text="${products.size()}">0</span> products found
-                </p>
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+                <div class="flex items-center w-full">
+                    <div class="flex-1">
+                        <h1 class="text-2xl font-bold gradient-text">
+                            Search Results for "<span th:text="${query}"></span>"
+                        </h1>
+                        <p class="text-gray-600">
+                            <span class="font-semibold" th:text="${products.size()}">0</span> products found
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="relative w-full sm:w-auto" th:if="${products != null and !products.isEmpty()}">
+                    <select id="sortSelect" onchange="sortProducts()" class="w-full sm:w-56 appearance-none bg-white border-2 border-blue-100 text-gray-700 py-3 px-4 pr-10 rounded-xl focus:outline-none focus:border-blue-300 focus:ring focus:ring-blue-200 transition-all font-medium cursor-pointer shadow-sm">
+                        <option value="relevance">Sort by: Relevance</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="name-a">Name: A to Z</option>
+                        <option value="name-z">Name: Z to A</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-blue-500">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Products Grid -->
-        <div class="space-y-6">
+        <div id="products-grid" class="space-y-6">
             <!-- Loop over products: one per row -->
-            <div th:each="product : ${products}" class="product-card cursor-pointer flex items-center slide-up"
+            <div th:each="product : ${products}" class="product-card product-item cursor-pointer flex flex-col md:flex-row items-center slide-up"
+                th:data-price="${product.price}"
+                th:data-name="${product.name}"
                 th:onclick="'window.location.href=\'/products/view/' + ${product.id} + '\''">
 
                 <!-- Product Image -->
@@ -608,10 +628,50 @@
             }
         }
 
+        let originalOrder = [];
+
+        function sortProducts() {
+            const grid = document.getElementById('products-grid');
+            if (!grid) return;
+
+            const sortType = document.getElementById('sortSelect').value;
+            let items = Array.from(grid.querySelectorAll('.product-item'));
+
+            if (sortType === 'relevance') {
+                originalOrder.forEach(item => grid.appendChild(item));
+                return;
+            }
+
+            items.sort((a, b) => {
+                let valA, valB;
+
+                if (sortType.includes('price')) {
+                    valA = parseFloat(a.getAttribute('data-price')) || 0;
+                    valB = parseFloat(b.getAttribute('data-price')) || 0;
+                    return sortType === 'price-low' ? valA - valB : valB - valA;
+                } else {
+                    valA = (a.getAttribute('data-name') || '').toLowerCase();
+                    valB = (b.getAttribute('data-name') || '').toLowerCase();
+                    if (valA < valB) return sortType === 'name-a' ? -1 : 1;
+                    if (valA > valB) return sortType === 'name-a' ? 1 : -1;
+                    return 0;
+                }
+            });
+
+            // Re-append to DOM in new order
+            items.forEach(item => grid.appendChild(item));
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function () {
             updateCartCount();
             updateAuthButtons();
+
+            // Store original order of products for "relevance" sort
+            const grid = document.getElementById('products-grid');
+            if (grid) {
+                originalOrder = Array.from(grid.querySelectorAll('.product-item'));
+            }
 
             // Focus search input
             const searchInput = document.getElementById('searchInput');
