@@ -60,7 +60,7 @@ public class SecurityConfig {
                                                                 "/registration-verification",
                                                                 "/categories/view", "/categories", "/cart/add/**",
                                                                 "/otp-verification", "/forgot-password",
-                                                                "/reset-password", "/products",
+                                                                "/reset-password", "/products", "/products/add/**",
                                                                 "/products/view/**", "/cart/view", "/cart",
                                                                 "/checkout/**",
                                                                 "/payment/**", "/products/search-results",

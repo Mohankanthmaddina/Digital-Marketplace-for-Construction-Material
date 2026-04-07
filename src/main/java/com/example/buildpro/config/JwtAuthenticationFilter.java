@@ -34,12 +34,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtUtil.extractUsername(token);
+            try {
+                username = jwtUtil.extractUsername(token);
+            } catch (Exception e) {
+                System.out.println("Invalid or expired JWT token: " + e.getMessage());
+            }
         } else if (request.getCookies() != null) {
             for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
                 if ("authToken".equals(cookie.getName())) {
                     token = cookie.getValue();
-                    username = jwtUtil.extractUsername(token);
+                    try {
+                        username = jwtUtil.extractUsername(token);
+                    } catch (Exception e) {
+                        System.out.println("Invalid or expired JWT cookie: " + e.getMessage());
+                    }
                     break;
                 }
             }

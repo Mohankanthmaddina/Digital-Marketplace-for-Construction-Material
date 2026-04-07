@@ -56,8 +56,8 @@ public class OrderService {
                 .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
                 .sum();
 
-        double deliveryCharge = calculateDeliveryCharge(subtotal, addressOpt.get());
-        double discount = calculateClusterDiscount(user, addressOpt.get(), deliveryCharge);
+        double deliveryCharge = subtotal * 0.05;
+        double discount = subtotal > 1000 ? deliveryCharge * 0.15 : 0;
         double finalAmount = subtotal + deliveryCharge - discount;
 
         // Create order

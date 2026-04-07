@@ -53,7 +53,7 @@ public class CheckoutController {
                 .mapToDouble(item -> item.getQuantity() * item.getProduct().getPrice())
                 .sum();
 
-        double deliveryCharge = 500.0; // Fixed delivery charge
+        double deliveryCharge = subtotal * 0.05;
         double discount = subtotal > 1000 ? deliveryCharge * 0.15 : 0;
         double total = subtotal + deliveryCharge - discount;
 
